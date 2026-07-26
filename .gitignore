@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*
+
+# Re-allow the checked-in template. Must stay last: the Vercel CLI appends
+# `.env*` here on `vercel link`, which would otherwise re-ignore it.
+!.env.local.example
