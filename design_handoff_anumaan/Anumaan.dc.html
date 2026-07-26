@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-14715c8d-3da7-4cff-96cf-67a7cdcdf020/styles.css">
+<script src="_ds/modernist-14715c8d-3da7-4cff-96cf-67a7cdcdf020/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+body{margin:0}
+.anu-row{display:flex;align-items:center;gap:var(--space-2)}
+a{color:var(--color-accent)}
+a:hover{color:var(--color-accent-700)}
+</style>
+</helmet>
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);padding-bottom:80px">
+
+<nav class="nav" style="flex-wrap:wrap;row-gap:var(--space-2)">
+<span class="nav-brand">Anumaan</span>
+<div class="seg" role="radiogroup" aria-label="Surface">
+<label class="seg-opt"><input type="radio" name="anu-surface" checked="{{ isCustomer }}" onChange="{{ setSurfaceCustomer }}"/>Customer App</label>
+<label class="seg-opt"><input type="radio" name="anu-surface" checked="{{ isKitchen }}" onChange="{{ setSurfaceKitchen }}"/>Kitchen Display</label>
+<label class="seg-opt"><input type="radio" name="anu-surface" checked="{{ isOwner }}" onChange="{{ setSurfaceOwner }}"/>Owner Dashboard</label>
+</div>
+<div class="seg" role="radiogroup" aria-label="Language" style="margin-left:auto">
+<label class="seg-opt"><input type="radio" name="anu-lang" checked="{{ langIsEn }}" onChange="{{ setLangEn }}"/>EN</label>
+<label class="seg-opt"><input type="radio" name="anu-lang" checked="{{ langIsHi }}" onChange="{{ setLangHi }}"/>हिं</label>
+</div>
+</nav>
+
+<div style="padding:var(--space-6) var(--space-4)">
+
+<sc-if value="{{ isCustomer }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;justify-content:center">
+<div style="width:420px;max-width:100%;border:2px solid var(--color-divider);background:var(--color-surface);box-shadow:var(--shadow-lg);position:relative">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-divider)">
+<div style="font-family:var(--font-heading);font-weight:800;font-size:15px">Anumaan · Table 12</div>
+<button type="button" class="btn btn-secondary btn-icon" onClick="{{ goCart }}" aria-label="Cart" style="position:relative">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+<sc-if value="{{ cartCount }}" hint-placeholder-val="{{ 0 }}">
+<span style="position:absolute;top:-6px;right:-6px;background:var(--color-accent);color:var(--color-bg);border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center">{{ cartCount }}</span>
+</sc-if>
+</button>
+</div>
+<div style="padding:var(--space-4)">
+
+<sc-if value="{{ isCustMenu }}" hint-placeholder-val="{{ true }}">
+<div class="field"><input class="input" value="{{ searchQuery }}" onChange="{{ onSearchInput }}" placeholder="{{ labels.search }}"/></div>
+<div class="seg" role="radiogroup" style="margin-bottom:var(--space-4)">
+<label class="seg-opt"><input type="radio" name="vegfilter" checked="{{ vegAllChecked }}" onChange="{{ setVegAll }}"/>{{ labels.all }}</label>
+<label class="seg-opt"><input type="radio" name="vegfilter" checked="{{ vegVegChecked }}" onChange="{{ setVegVeg }}"/>{{ labels.veg }}</label>
+<label class="seg-opt"><input type="radio" name="vegfilter" checked="{{ vegNonvegChecked }}" onChange="{{ setVegNonveg }}"/>{{ labels.nonveg }}</label>
+</div>
+<sc-for list="{{ filteredMenu }}" as="item" hint-placeholder-count="6">
+<sc-if value="{{ item.showCategoryHeader }}" hint-placeholder-val="{{ false }}"><h5 style="margin-top:var(--space-6);padding-bottom:var(--space-1);border-bottom:2px solid var(--color-divider)">{{ item.category }}</h5></sc-if>
+<div onClick="{{ item.selectHandler }}" style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--color-divider);cursor:pointer">
+<div style="width:48px;height:48px;flex-shrink:0;border:1px solid var(--color-divider);background:var(--color-neutral-200)"></div>
+<span style="{{ item.vegDotStyle }}"></span>
+<div style="flex:1;min-width:0;display:flex;align-items:baseline;gap:6px;overflow:hidden">
+<span style="font-weight:600;font-size:14px;white-space:nowrap">{{ item.name }}</span>
+<span style="flex:1;border-bottom:1px dotted var(--color-neutral-500);height:0;transform:translateY(-3px)"></span>
+<span style="font-family:var(--font-heading);font-weight:700;font-size:14px;white-space:nowrap">₹{{ item.price }}</span>
+</div>
+<sc-if value="{{ item.available }}" hint-placeholder-val="{{ true }}"><button type="button" class="btn btn-secondary" onClick="{{ item.addHandler }}">{{ labels.addToCart }}</button></sc-if>
+<sc-if value="{{ item.notAvailable }}" hint-placeholder-val="{{ false }}"><span class="tag tag-neutral">{{ labels.soldOut }}</span></sc-if>
+</div>
+</sc-for>
+<div style="text-align:center;margin-top:var(--space-4)"><button type="button" class="btn btn-ghost" onClick="{{ goQueue }}">{{ labels.joinQueue }}</button></div>
+</sc-if>
+
+<sc-if value="{{ isCustItem }}" hint-placeholder-val="{{ false }}">
+<button type="button" class="btn btn-ghost" onClick="{{ goMenu }}" style="margin-bottom:var(--space-3)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>{{ labels.back }}</button>
+<div class="grayscale" style="width:100%;height:200px;margin-bottom:var(--space-3)"><image-slot id="{{ selectedItem.slotId }}" shape="rect" placeholder="Dish photo"></image-slot></div>
+<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:2px"><span style="{{ selectedItem.vegDotStyle }}"></span><h3 style="margin:0">{{ selectedItem.name }}</h3></div>
+<div class="text-muted" style="margin-bottom:var(--space-3)">₹{{ selectedItem.price }}</div>
+<p style="font-size:14px">{{ selectedItem.desc }}</p>
+<button type="button" class="btn btn-primary btn-block" onClick="{{ addSelectedToCart }}">{{ labels.addToCart }}</button>
+<sc-if value="{{ selectedItemInCartQty }}" hint-placeholder-val="{{ 0 }}"><div class="text-muted" style="text-align:center;margin-top:var(--space-2);font-size:12px">In cart: {{ selectedItemInCartQty }}</div></sc-if>
+</sc-if>
+
+<sc-if value="{{ isCustCart }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+<p class="text-muted" style="text-align:center;padding:var(--space-8) 0">{{ labels.yourCartEmpty }}</p>
+<div style="text-align:center"><button type="button" class="btn btn-secondary" onClick="{{ goMenu }}">{{ labels.menuHome }}</button></div>
+</sc-if>
+<sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="0">
+<div style="display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) 0;border-bottom:1px solid var(--color-divider)">
+<div style="flex:1;font-size:14px;font-weight:600">{{ ci.name }}</div>
+<button type="button" class="btn btn-secondary btn-icon" onClick="{{ ci.decHandler }}" aria-label="Decrease"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+<div style="width:22px;text-align:center">{{ ci.qty }}</div>
+<button type="button" class="btn btn-secondary btn-icon" onClick="{{ ci.incHandler }}" aria-label="Increase"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+<div style="width:64px;text-align:right">₹{{ ci.lineTotal }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ cartTotal }}" hint-placeholder-val="{{ 0 }}">
+<div style="display:flex;justify-content:space-between;padding:var(--space-3) 0;font-weight:800;font-family:var(--font-heading)"><span>Total</span><span>₹{{ cartTotal }}</span></div>
+<button type="button" class="btn btn-primary btn-block" onClick="{{ confirmOrderHandler }}">{{ labels.confirmOrder }}</button>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isCustOrderStatus }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ noCurrentOrder }}" hint-placeholder-val="{{ false }}">
+<p class="text-muted" style="text-align:center;padding:var(--space-6) 0">{{ labels.noActiveOrder }}</p>
+<div style="text-align:center"><button type="button" class="btn btn-secondary" onClick="{{ goMenu }}">{{ labels.menuHome }}</button></div>
+</sc-if>
+<sc-if value="{{ hasCurrentOrder }}" hint-placeholder-val="{{ false }}">
+<p class="text-muted" style="font-size:13px">{{ currentOrder.itemsSummary }} · Table {{ currentOrder.table }}</p>
+<div style="display:flex;gap:var(--space-1);flex-wrap:wrap;margin:var(--space-3) 0">
+<span class="{{ stepNewClass }}">{{ labels.new }}</span>
+<span class="{{ stepPrepClass }}">{{ labels.preparing }}</span>
+<span class="{{ stepReadyClass }}">{{ labels.ready }}</span>
+<span class="{{ stepServedClass }}">{{ labels.served }}</span>
+</div>
+<div style="font-weight:800;font-family:var(--font-heading);margin-bottom:var(--space-3)">Total ₹{{ currentOrder.total }}</div>
+<button type="button" class="btn btn-secondary btn-block" onClick="{{ openOtp }}">{{ labels.getNotified }}</button>
+<sc-if value="{{ billVisible }}" hint-placeholder-val="{{ false }}"><button type="button" class="btn btn-primary btn-block" onClick="{{ goBillScreen }}">{{ labels.bill }}</button></sc-if>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isCustQueue }}" hint-placeholder-val="{{ false }}">
+<div class="field"><label>Your name</label><input class="input" placeholder="Name"/></div>
+<div class="field"><label>Phone number</label><input class="input" placeholder="Phone"/></div>
+<div class="card elev-sm" style="align-items:center;text-align:center;margin-bottom:var(--space-4)">
+<div class="card-kicker">Your position</div>
+<div style="font-family:var(--font-heading);font-weight:800;font-size:32px">#{{ yourQueuePosition }}</div>
+<div class="text-muted" style="font-size:12px">~{{ yourQueueWait }} min estimated wait</div>
+</div>
+<sc-for list="{{ queueEntries }}" as="q" hint-placeholder-count="2">
+<div style="display:flex;justify-content:space-between;font-size:13px;padding:var(--space-1) 0;border-bottom:1px solid var(--color-divider)"><span>#{{ q.position }} {{ q.name }}</span><span class="text-muted">~{{ q.waitMin }} min</span></div>
+</sc-for>
+<button type="button" class="btn btn-primary btn-block" onClick="{{ simulateQueueReady }}">{{ labels.simulateReady }}</button>
+</sc-if>
+
+<sc-if value="{{ isCustBill }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ notBillVisible }}" hint-placeholder-val="{{ true }}"><p class="text-muted" style="text-align:center;padding:var(--space-6) 0">Your bill will appear here once your order is ready.</p></sc-if>
+<sc-if value="{{ billVisible }}" hint-placeholder-val="{{ false }}">
+<p class="text-muted" style="font-size:13px">{{ currentOrder.itemsSummary }}</p>
+<div style="display:flex;justify-content:space-between;font-weight:800;font-family:var(--font-heading);font-size:18px;padding:var(--space-2) 0;border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);margin-bottom:var(--space-4)"><span>Total</span><span>₹{{ currentOrder.total }}</span></div>
+<div style="width:140px;height:140px;border:2px solid var(--color-divider);margin:0 auto var(--space-3);display:flex;align-items:center;justify-content:center" class="text-muted">UPI QR</div>
+<p class="text-muted" style="font-size:11px;text-align:center;word-break:break-all">upi://pay?pa=anumaan@upi&amp;am={{ currentOrder.total }}</p>
+<sc-if value="{{ currentOrderPaid }}" hint-placeholder-val="{{ false }}"><p style="text-align:center;font-weight:700;color:var(--color-accent-700)">Paid ✓</p></sc-if>
+<sc-if value="{{ notCurrentOrderPaid }}" hint-placeholder-val="{{ true }}"><button type="button" class="btn btn-primary btn-block" onClick="{{ markPaidHandler }}">{{ labels.payNow }}</button></sc-if>
+</sc-if>
+</sc-if>
+
+</div>
+</div>
+</div>
+
+<sc-if value="{{ otpOpen }}" hint-placeholder-val="{{ false }}">
+<div class="dialog-backdrop">
+<div class="dialog" role="dialog" aria-modal="true">
+<div class="dialog-title">{{ labels.getNotified }}</div>
+<div class="dialog-body"><input class="input" placeholder="Phone number"/></div>
+<div class="dialog-actions">
+<button type="button" class="btn btn-secondary" onClick="{{ closeOtp }}">Cancel</button>
+<button type="button" class="btn btn-primary">{{ labels.sendOtp }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isKitchen }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;justify-content:center">
+<div style="width:100%;max-width:960px;border:2px solid var(--color-divider);background:var(--color-surface);box-shadow:var(--shadow-lg);padding:var(--space-4)">
+<div class="anu-row" style="margin-bottom:var(--space-4);flex-wrap:wrap">
+<button type="button" class="btn {{ kitQueueBtnClass }}" onClick="{{ goKitQueue }}">Order Queue</button>
+<button type="button" class="btn {{ kitTablesBtnClass }}" onClick="{{ goKitTables }}">{{ labels.tables }}</button>
+<button type="button" class="btn {{ kitAvailBtnClass }}" onClick="{{ goKitAvail }}">{{ labels.availability }}</button>
+</div>
+
+<sc-if value="{{ isKitQueue }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4)">
+<div><h6>{{ labels.new }}</h6>
+<sc-for list="{{ newOrders }}" as="o" hint-placeholder-count="1">
+<div class="card elev-sm" onClick="{{ o.advanceHandler }}" style="cursor:pointer;margin-bottom:var(--space-2)">
+<div class="card-kicker">Table {{ o.table }} · {{ o.id }}</div><p class="card-body">{{ o.itemsSummary }}</p>
+<div class="card-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>{{ o.placedMin }} min ago</div>
+</div>
+</sc-for></div>
+<div><h6>{{ labels.preparing }}</h6>
+<sc-for list="{{ preparingOrders }}" as="o" hint-placeholder-count="1">
+<div class="card elev-sm" onClick="{{ o.advanceHandler }}" style="cursor:pointer;margin-bottom:var(--space-2)">
+<div class="card-kicker">Table {{ o.table }} · {{ o.id }}</div><p class="card-body">{{ o.itemsSummary }}</p>
+<div class="card-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>{{ o.placedMin }} min ago</div>
+</div>
+</sc-for></div>
+<div><h6>{{ labels.ready }}</h6>
+<sc-for list="{{ readyOrders }}" as="o" hint-placeholder-count="1">
+<div class="card elev-sm" onClick="{{ o.advanceHandler }}" style="cursor:pointer;margin-bottom:var(--space-2)">
+<div class="card-kicker">Table {{ o.table }} · {{ o.id }}</div><p class="card-body">{{ o.itemsSummary }}</p>
+</div>
+</sc-for></div>
+<div><h6>{{ labels.served }}</h6>
+<sc-for list="{{ servedOrders }}" as="o" hint-placeholder-count="1">
+<div class="card elev-sm" style="opacity:.55;margin-bottom:var(--space-2)">
+<div class="card-kicker">Table {{ o.table }} · {{ o.id }}</div><p class="card-body">{{ o.itemsSummary }}</p>
+</div>
+</sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isKitTables }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3)">
+<sc-for list="{{ tablesEnriched }}" as="t" hint-placeholder-count="8">
+<div class="card elev-sm" onClick="{{ t.cycleHandler }}" style="cursor:pointer;text-align:center;align-items:center">
+<div style="font-family:var(--font-heading);font-weight:800;font-size:18px">T{{ t.id }}</div>
+<span class="{{ t.tagClass }}">{{ t.label }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isKitAvail }}" hint-placeholder-val="{{ false }}">
+<p class="text-muted" style="font-size:13px;margin-bottom:var(--space-3)">Toggling here updates the customer menu instantly.</p>
+<sc-for list="{{ availabilityGrid }}" as="m" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--color-divider)">
+<div style="flex:1;font-weight:600;font-size:14px">{{ m.name }}</div>
+<div class="text-muted" style="font-size:12px;width:90px">{{ m.category }}</div>
+<button type="button" class="btn {{ m.toggleBtnClass }}" onClick="{{ m.toggleHandler }}">{{ m.toggleLabel }}</button>
+</div>
+</sc-for>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwner }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:var(--space-6);max-width:1240px;margin:0 auto">
+<div style="width:230px;flex-shrink:0">
+<sc-for list="{{ ownerNav }}" as="n" hint-placeholder-count="11">
+<button type="button" class="btn btn-block {{ n.btnClass }}" onClick="{{ n.onClick }}">{{ n.label }}</button>
+</sc-for>
+</div>
+<div style="flex:1;min-width:0">
+
+<sc-if value="{{ isOwnBriefing }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--color-accent);color:var(--color-bg);padding:var(--space-6) var(--space-4);margin-bottom:var(--space-4)">
+<div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.85;margin-bottom:var(--space-2)">{{ labels.briefing }} · Good morning, Raj</div>
+<div style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1;margin-bottom:var(--space-3)">₹18,400 <span style="font-size:18px;font-weight:400;opacity:.85">yesterday · 62 orders</span></div>
+<p style="font-size:14px;max-width:64ch;margin:0">Dal Makhani sold out at 7:40pm — 6 guests were offered Paneer Butter Masala instead. Expect a busy Friday dinner tonight.</p>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr;margin-bottom:var(--space-4)">
+<div style="padding-right:var(--space-4);border-right:2px solid var(--color-divider)">
+<div class="card-kicker">Today, prep</div>
+<p style="font-size:15px;margin:0">Prep about <strong style="color:var(--color-accent-700)">20% more paneer</strong> than last Friday — Tuesday's usual slow-lunch pattern doesn't apply today.</p>
+</div>
+<div style="padding:0 var(--space-4);border-right:2px solid var(--color-divider)">
+<div class="card-kicker">Revenue so far</div>
+<div style="font-family:var(--font-heading);font-weight:800;font-size:26px">₹6,200</div>
+</div>
+<div style="padding-left:var(--space-4)">
+<div class="card-kicker">Orders so far</div>
+<div style="font-family:var(--font-heading);font-weight:800;font-size:26px">18</div>
+</div>
+</div>
+<div class="card elev-sm" style="margin-bottom:var(--space-4)">
+<span class="tag tag-accent">Stockout risk</span>
+<p style="font-size:14px;margin:var(--space-1) 0 0">Butter stock (1.5kg) is likely to run out by 8:30pm at tonight's forecasted pace.</p>
+<button type="button" class="btn btn-secondary" onClick="{{ goInventoryFromBriefing }}" style="margin-top:var(--space-2)">{{ labels.inventory }}</button>
+</div>
+<div class="card elev-md" style="margin-bottom:var(--space-4)">
+<div class="anu-row"><span class="tag tag-outline">{{ labels.agentProposal }}</span><span class="text-muted" style="font-size:12px;font-weight:700">Prep &amp; Forecast Agent</span></div>
+<p style="font-size:14px;margin:0">{{ prepProposalText }}</p>
+<p class="text-muted" style="font-size:12px">{{ prepProposalBasis }}</p>
+<sc-if value="{{ prepPending }}" hint-placeholder-val="{{ true }}">
+<div class="anu-row"><button type="button" class="btn btn-primary" onClick="{{ approvePrepHandler }}">{{ labels.approve }}</button><button type="button" class="btn btn-secondary" onClick="{{ rejectPrepHandler }}">{{ labels.reject }}</button></div>
+</sc-if>
+<sc-if value="{{ prepApproved }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent">Approved — sent to Kitchen Board</span></sc-if>
+<sc-if value="{{ prepRejected }}" hint-placeholder-val="{{ false }}"><span class="tag tag-neutral">Rejected</span></sc-if>
+</div>
+<div class="card">
+<div class="card-kicker">Forecast vs actual, today</div>
+<div style="display:flex;gap:var(--space-4);align-items:flex-end;height:110px">
+<sc-for list="{{ forecastBars }}" as="f" hint-placeholder-count="4">
+<div style="text-align:center"><div style="display:flex;gap:3px;align-items:flex-end;height:90px"><div style="{{ f.fStyle }}"></div><div style="{{ f.aStyle }}"></div></div><div class="text-muted" style="font-size:10px;margin-top:4px">{{ f.hour }}</div></div>
+</sc-for>
+</div>
+<div class="text-muted anu-row" style="font-size:11px"><span>▬ forecast</span><span>▬ actual</span></div>
+<button type="button" class="btn btn-ghost" onClick="{{ goAskFromBriefing }}">{{ labels.ask }} →</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnOrders }}" hint-placeholder-val="{{ false }}">
+<div class="anu-row" style="margin-bottom:var(--space-3);flex-wrap:wrap">
+<sc-for list="{{ ownerOrderFilterBtns }}" as="f" hint-placeholder-count="5"><button type="button" class="btn {{ f.btnClass }}" onClick="{{ f.onClick }}">{{ f.label }}</button></sc-for>
+</div>
+<table class="table"><thead><tr><th>ID</th><th>Items</th><th>Status</th><th>Total</th></tr></thead>
+<tbody><sc-for list="{{ ownerOrders }}" as="o" hint-placeholder-count="4"><tr><td>{{ o.id }}</td><td>{{ o.itemsSummary }}</td><td><span class="{{ o.tagClass }}">{{ o.statusLabel }}</span></td><td>₹{{ o.total }}</td></tr></sc-for></tbody>
+</table>
+</sc-if>
+
+<sc-if value="{{ isOwnTables }}" hint-placeholder-val="{{ false }}">
+<table class="table"><thead><tr><th>Table</th><th>Status</th><th></th></tr></thead>
+<tbody><sc-for list="{{ tablesEnrichedOwner }}" as="t" hint-placeholder-count="8"><tr><td>Table {{ t.id }}</td><td><span class="{{ t.tagClass }}">{{ t.label }}</span></td><td><button type="button" class="btn btn-secondary" onClick="{{ t.cycleHandler }}">Cycle</button></td></tr></sc-for></tbody>
+</table>
+</sc-if>
+
+<sc-if value="{{ isOwnInventory }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ inventoryEnriched }}" as="it" hint-placeholder-count="6">
+<div class="card" style="margin-bottom:var(--space-3)">
+<div style="display:flex;justify-content:space-between;font-weight:700"><span>{{ it.name }}</span><span>{{ it.stock }} {{ it.unit }}</span></div>
+<div style="{{ it.barOuter }}"><div style="{{ it.barFill }}"></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="anu-row">
+<sc-if value="{{ it.stockout }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent">Stockout risk</span></sc-if>
+<sc-if value="{{ it.low }}" hint-placeholder-val="{{ false }}"><span class="tag tag-outline">Low stock</span></sc-if>
+</div>
+<div class="anu-row">
+<button type="button" class="btn btn-secondary btn-icon" onClick="{{ it.decHandler }}" aria-label="Decrease"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+<button type="button" class="btn btn-secondary btn-icon" onClick="{{ it.incHandler }}" aria-label="Increase"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+</div>
+</div>
+</div>
+</sc-for>
+</sc-if>
+
+<sc-if value="{{ isOwnStaff }}" hint-placeholder-val="{{ false }}">
+<table class="table"><thead><tr><th>Name</th><th>Role</th><th>Shift</th></tr></thead>
+<tbody><sc-for list="{{ staffList }}" as="p" hint-placeholder-count="4"><tr><td>{{ p.name }}</td><td>{{ p.role }}</td><td>{{ p.shift }}</td></tr></sc-for></tbody>
+</table>
+<p class="text-muted" style="font-size:12px;margin-top:var(--space-3)">Attendance from clock-in/out is planned as a follow-up pass (P1).</p>
+</sc-if>
+
+<sc-if value="{{ isOwnCustomers }}" hint-placeholder-val="{{ false }}">
+<table class="table"><thead><tr><th>Name</th><th>Visits</th><th>Last visit</th><th>Phone</th></tr></thead>
+<tbody><sc-for list="{{ customersList }}" as="cu" hint-placeholder-count="3"><tr><td>{{ cu.name }}</td><td>{{ cu.visits }}</td><td>{{ cu.lastVisit }}</td><td>{{ cu.phone }}</td></tr></sc-for></tbody>
+</table>
+</sc-if>
+
+<sc-if value="{{ isOwnSales }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);margin-bottom:var(--space-4)">
+<div class="card"><div class="card-kicker">Today</div><div style="font-family:var(--font-heading);font-weight:800;font-size:22px">₹18,400</div></div>
+<div class="card"><div class="card-kicker">This week</div><div style="font-family:var(--font-heading);font-weight:800;font-size:22px">₹1,42,000</div></div>
+<div class="card"><div class="card-kicker">This month</div><div style="font-family:var(--font-heading);font-weight:800;font-size:22px">₹5,86,000</div></div>
+</div>
+<div class="card"><div class="card-kicker">Peak hours (covers)</div>
+<div style="display:flex;gap:var(--space-4);align-items:flex-end;height:130px">
+<sc-for list="{{ peakHours }}" as="h" hint-placeholder-count="6"><div style="text-align:center"><div style="{{ h.barStyle }}"></div><div class="text-muted" style="font-size:10px;margin-top:4px">{{ h.hour }}</div></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnAsk }}" hint-placeholder-val="{{ false }}">
+<div class="card">
+<div class="anu-row" style="flex-wrap:wrap;margin-bottom:var(--space-3)">
+<button type="button" class="btn btn-secondary" onClick="{{ askPresetTuesday }}">Why was Tuesday slow?</button>
+<button type="button" class="btn btn-secondary" onClick="{{ askPresetPrep }}">What should I prep more of tomorrow?</button>
+<button type="button" class="btn btn-secondary" onClick="{{ askPresetStockout }}">86 the item about to run out</button>
+</div>
+<div style="min-height:60px;margin-bottom:var(--space-3)">
+<sc-for list="{{ askLogEnriched }}" as="qa" hint-placeholder-count="0">
+<div style="display:flex;justify-content:flex-end;margin-bottom:var(--space-1)"><div style="background:var(--color-text);color:var(--color-bg);padding:8px 12px;font-size:13px;max-width:80%">{{ qa.q }}</div></div>
+<div style="display:flex;justify-content:flex-start;margin-bottom:var(--space-1)"><div style="background:var(--color-neutral-100);border:1px solid var(--color-divider);padding:8px 12px;font-size:13px;max-width:80%">{{ qa.a }}</div></div>
+<sc-if value="{{ qa.hasProposal }}" hint-placeholder-val="{{ false }}">
+<div class="card elev-sm" style="max-width:80%;margin-bottom:var(--space-3)">
+<span class="tag tag-outline">{{ labels.proposedAction }}</span>
+<p style="font-size:13px;margin:var(--space-1) 0">{{ qa.proposal.actionText }}</p>
+<sc-if value="{{ qa.proposalPending }}" hint-placeholder-val="{{ true }}"><div class="anu-row"><button type="button" class="btn btn-primary" onClick="{{ qa.approveHandler }}">{{ labels.approve }}</button><button type="button" class="btn btn-secondary" onClick="{{ qa.rejectHandler }}">{{ labels.reject }}</button></div></sc-if>
+<sc-if value="{{ qa.proposalApproved }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent">Approved &amp; executed</span></sc-if>
+<sc-if value="{{ qa.proposalRejected }}" hint-placeholder-val="{{ false }}"><span class="tag tag-neutral">Rejected</span></sc-if>
+</div>
+</sc-if>
+</sc-for>
+</div>
+<div class="anu-row"><input class="input" value="{{ askInput }}" onChange="{{ onAskInputChange }}" placeholder="Ask about your restaurant's own data..."/><button type="button" class="btn btn-primary" onClick="{{ submitAskHandler }}">{{ labels.send }}</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnAgents }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ agentActionsEnriched }}" as="a" hint-placeholder-count="3">
+<div class="card" style="margin-bottom:var(--space-3)">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:13px">{{ a.agent }}</span><span class="{{ a.tagClass }}">{{ a.statusLabel }}</span></div>
+<p style="font-size:14px;margin:var(--space-1) 0">{{ a.proposal }}</p>
+<p class="text-muted" style="font-size:12px">{{ a.basis }} · {{ a.time }}</p>
+</div>
+</sc-for>
+<sc-if value="{{ agentActionsEmpty }}" hint-placeholder-val="{{ false }}"><p class="text-muted" style="text-align:center;padding:var(--space-6) 0">No agent activity yet.</p></sc-if>
+</sc-if>
+
+<sc-if value="{{ isOwnCompliance }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ complianceEnriched }}" as="c" hint-placeholder-count="5">
+<div onClick="{{ c.toggleHandler }}" style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--color-divider);cursor:pointer">
+<span class="{{ c.tagClass }}">{{ c.statusLabel }}</span>
+<div style="flex:1;font-size:14px">{{ c.label }}</div>
+<div class="text-muted" style="font-size:12px">{{ c.time }}</div>
+</div>
+</sc-for>
+<div class="card elev-sm" style="margin-top:var(--space-4);flex-direction:row;align-items:center;gap:var(--space-4)">
+<div class="grayscale" style="width:70px;height:70px;flex-shrink:0"><image-slot id="fssai-qr" shape="rect" placeholder="FSSAI QR"></image-slot></div>
+<p class="text-muted" style="font-size:12px;margin:0">FSSAI License #12345678901234 — this QR and license number also show on the customer-facing menu page.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnSettings }}" hint-placeholder-val="{{ false }}">
+<button type="button" class="btn btn-secondary" onClick="{{ addMenuItemHandler }}" style="margin-bottom:var(--space-3)">{{ labels.addItem }}</button>
+<sc-for list="{{ settingsMenu }}" as="m" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--color-divider)">
+<span style="{{ m.vegDotStyle }}"></span>
+<div style="flex:1;font-weight:600;font-size:14px">{{ m.name }}</div>
+<div class="text-muted" style="font-size:12px;width:90px">{{ m.category }}</div>
+<div style="width:56px">₹{{ m.price }}</div>
+<button type="button" class="btn {{ m.toggleBtnClass }}" onClick="{{ m.toggleHandler }}">{{ m.toggleLabel }}</button>
+</div>
+</sc-for>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const EN = {
+addToCart:'Add to Cart', viewCart:'Cart', confirmOrder:'Confirm Order', joinQueue:'No table free? Join the queue instead',
+payNow:'Mark as Paid', back:'Back', new:'New', preparing:'Preparing', ready:'Ready', served:'Served',
+navCustomer:'Customer App', navKitchen:'Kitchen Display', navOwner:'Owner Dashboard',
+briefing:'Daily Briefing', orders:'Orders', tables:'Tables', inventory:'Inventory', staff:'Staff',
+customers:'Customers', sales:'Sales & Analytics', ask:'Ask Anumaan', compliance:'Compliance Log', settings:'Settings',
+menuHome:'Menu', queueWait:'Queue / Wait', bill:'View Bill', availability:'Availability',
+search:'Search dishes...', all:'All', veg:'Veg', nonveg:'Non-veg', soldOut:'Sold out',
+addItem:'Add Item', sendOtp:'Send OTP', getNotified:'Get notified via SMS', simulateReady:'Simulate: table is ready',
+send:'Send', yourCartEmpty:'Your cart is empty', noActiveOrder:'No active order yet — place one from the menu.',
+approve:'Approve', reject:'Reject', agents:'Agent Activity Log', agentProposal:'Agent proposal', proposedAction:'Proposed action'
+};
+const HI = {
+addToCart:'कार्ट में जोड़ें', viewCart:'कार्ट', confirmOrder:'ऑर्डर पक्का करें', joinQueue:'टेबल खाली नहीं? कतार में जुड़ें',
+payNow:'भुगतान दर्ज करें', back:'वापस', new:'नया', preparing:'बन रहा है', ready:'तैयार', served:'परोसा गया',
+navCustomer:'ग्राहक ऐप', navKitchen:'किचन डिस्प्ले', navOwner:'मालिक डैशबोर्ड',
+briefing:'दैनिक सारांश', orders:'ऑर्डर', tables:'टेबल', inventory:'भंडार', staff:'स्टाफ',
+customers:'ग्राहक', sales:'बिक्री और विश्लेषण', ask:'अनुमान से पूछें', compliance:'अनुपालन लॉग', settings:'सेटिंग्स',
+menuHome:'मेनू', queueWait:'प्रतीक्षा सूची', bill:'बिल देखें', availability:'उपलब्धता',
+search:'व्यंजन खोजें...', all:'सभी', veg:'शाकाहारी', nonveg:'मांसाहारी', soldOut:'खत्म हो गया',
+addItem:'आइटम जोड़ें', sendOtp:'ओटीपी भेजें', getNotified:'एसएमएस पर सूचना पाएं', simulateReady:'सिमुलेट: टेबल तैयार है',
+send:'भेजें', yourCartEmpty:'आपकी कार्ट खाली है', noActiveOrder:'अभी कोई सक्रिय ऑर्डर नहीं है — मेनू से ऑर्डर करें।',
+approve:'स्वीकृत करें', reject:'अस्वीकार करें', agents:'एजेंट गतिविधि लॉग', agentProposal:'एजेंट प्रस्ताव', proposedAction:'प्रस्तावित कार्रवाई'
+};
+
+class Component extends DCLogic {
+  state = {
+    surface:'customer', lang:'en',
+    custScreen:'menu', kitScreen:'queue', ownScreen:'briefing',
+    vegFilter:'all', searchQuery:'',
+    selectedItemId:3, currentOrderId:null, otpOpen:false,
+    askInput:'', askLog:[],
+    orderFilter:'all', nextOrderSeq:5,
+    prepProposal:{status:'pending', text:'Prep about 20% more paneer-based dishes (Butter Chicken, Paneer Butter Masala, Paneer Tikka) and check Butter stock before dinner service.', basis:"Based on today's orders vs. your seeded Friday average, and Butter trending toward a stockout by 8:30pm."},
+    agentActions:[{id:1,agent:'Compliance Nudge Agent',proposal:'Compliance checklist incomplete at the 9:00 PM cutoff — "Waste bin disposal log" not completed.',basis:"Scheduled 9:00 PM check of today's compliance log",status:'auto-executed',time:'9:00 PM'}],
+    menuItems:[
+      {id:1,name:'Paneer Tikka',category:'Starters',veg:true,price:220,available:true,desc:'Char-grilled cottage cheese marinated in yogurt and spices.'},
+      {id:2,name:'Chicken 65',category:'Starters',veg:false,price:260,available:true,desc:'Deep-fried spiced chicken, a South Indian favorite.'},
+      {id:3,name:'Butter Chicken',category:'Mains',veg:false,price:320,available:true,desc:'Slow-cooked chicken in a creamy tomato-butter gravy, finished with kasuri methi.'},
+      {id:4,name:'Dal Makhani',category:'Mains',veg:true,price:260,available:false,desc:'Black lentils simmered overnight with butter and cream.'},
+      {id:5,name:'Paneer Butter Masala',category:'Mains',veg:true,price:280,available:true,desc:'Cottage cheese in a rich tomato-cashew gravy.'},
+      {id:6,name:'Veg Biryani',category:'Mains',veg:true,price:240,available:true,desc:'Basmati rice layered with mixed vegetables and whole spices.'},
+      {id:7,name:'Chicken Biryani',category:'Mains',veg:false,price:300,available:true,desc:'Basmati rice slow-cooked with marinated chicken and saffron.'},
+      {id:8,name:'Tandoori Roti',category:'Breads',veg:true,price:40,available:true,desc:'Whole-wheat bread baked in the tandoor.'},
+      {id:9,name:'Garlic Naan',category:'Breads',veg:true,price:60,available:true,desc:'Leavened bread topped with garlic and butter.'},
+      {id:10,name:'Gulab Jamun',category:'Desserts',veg:true,price:90,available:true,desc:'Milk-solid dumplings soaked in cardamom sugar syrup.'},
+      {id:11,name:'Masala Chai',category:'Beverages',veg:true,price:50,available:true,desc:'Spiced tea brewed with milk.'},
+      {id:12,name:'Mango Lassi',category:'Beverages',veg:true,price:110,available:true,desc:'Yogurt-based mango smoothie.'}
+    ],
+    cart:[],
+    orders:[
+      {id:'O1',table:3,items:[{name:'Butter Chicken',qty:1},{name:'Garlic Naan',qty:2}],status:'preparing',placedMin:12,total:440,paid:false},
+      {id:'O2',table:7,items:[{name:'Veg Biryani',qty:2}],status:'new',placedMin:2,total:480,paid:false},
+      {id:'O3',table:4,items:[{name:'Paneer Tikka',qty:1},{name:'Masala Chai',qty:2}],status:'ready',placedMin:18,total:320,paid:false},
+      {id:'O4',table:1,items:[{name:'Chicken 65',qty:1}],status:'served',placedMin:40,total:260,paid:true}
+    ],
+    tables:[
+      {id:1,status:'empty'},{id:2,status:'seated'},{id:3,status:'seated'},{id:4,status:'billRequested'},
+      {id:5,status:'empty'},{id:6,status:'cleaning'},{id:7,status:'seated'},{id:8,status:'empty'}
+    ],
+    queueEntries:[{name:'Sharma, party of 4',waitMin:10},{name:'Verma, party of 2',waitMin:18}],
+    inventory:[
+      {id:1,name:'Paneer',stock:2,max:10,unit:'kg',low:true,stockout:false},
+      {id:2,name:'Chicken',stock:5,max:12,unit:'kg',low:false,stockout:false},
+      {id:3,name:'Basmati Rice',stock:10,max:20,unit:'kg',low:false,stockout:false},
+      {id:4,name:'Butter',stock:1.5,max:8,unit:'kg',low:true,stockout:true},
+      {id:5,name:'Onions',stock:8,max:15,unit:'kg',low:false,stockout:false},
+      {id:6,name:'Milk',stock:6,max:12,unit:'L',low:false,stockout:false}
+    ],
+    staff:[
+      {id:1,name:'Meena',role:'Floor',shift:'11am–8pm'},
+      {id:2,name:'Ramesh',role:'Kitchen',shift:'10am–7pm'},
+      {id:3,name:'Suresh',role:'Kitchen',shift:'1pm–10pm'},
+      {id:4,name:'Pooja',role:'Floor',shift:'1pm–10pm'}
+    ],
+    customers:[
+      {id:1,name:'Priya Sharma',visits:12,lastVisit:'2 days ago',phone:'98xxxxxx12'},
+      {id:2,name:'Ankit Verma',visits:3,lastVisit:'1 week ago',phone:'99xxxxxx48'},
+      {id:3,name:'Neha Gupta',visits:7,lastVisit:'Yesterday',phone:'97xxxxxx03'}
+    ],
+    complianceChecklist:[
+      {id:1,label:'Walk-in fridge temperature check — morning',checked:true,time:'9:02 AM'},
+      {id:2,label:'Walk-in fridge temperature check — afternoon',checked:true,time:'3:05 PM'},
+      {id:3,label:'Kitchen surface sanitation',checked:true,time:'11:40 AM'},
+      {id:4,label:'Handwash station stocked',checked:true,time:'9:15 AM'},
+      {id:5,label:'Waste bin disposal log',checked:false,time:''}
+    ]
+  };
+
+  setSurface=(s)=>this.setState({surface:s});
+  setLang=(l)=>this.setState({lang:l});
+  goCustomer=(s)=>this.setState({custScreen:s});
+  goKitchen=(s)=>this.setState({kitScreen:s});
+  goOwner=(s)=>this.setState({ownScreen:s});
+  setVegFilter=(f)=>this.setState({vegFilter:f});
+  setSearchQuery=(v)=>this.setState({searchQuery:v});
+  selectItem=(id)=>this.setState({selectedItemId:id,custScreen:'item'});
+  addToCart=(id)=>this.setState(s=>{
+    const cart=s.cart.slice(); const i=cart.findIndex(c=>c.itemId===id);
+    if(i>=0) cart[i]={...cart[i],qty:cart[i].qty+1}; else cart.push({itemId:id,qty:1});
+    return {cart};
+  });
+  changeCartQty=(id,delta)=>this.setState(s=>{
+    let cart=s.cart.map(c=>c.itemId===id?{...c,qty:c.qty+delta}:c);
+    cart=cart.filter(c=>c.qty>0);
+    return {cart};
+  });
+  confirmOrder=()=>this.setState(s=>{
+    if(s.cart.length===0) return {};
+    const items=s.cart.map(c=>{const m=s.menuItems.find(mi=>mi.id===c.itemId); return {name:m.name,qty:c.qty};});
+    const total=s.cart.reduce((sum,c)=>{const m=s.menuItems.find(mi=>mi.id===c.itemId); return sum+m.price*c.qty;},0);
+    const id='O'+s.nextOrderSeq;
+    const order={id,table:12,items,status:'new',placedMin:0,total,paid:false};
+    return {orders:[...s.orders,order],cart:[],currentOrderId:id,nextOrderSeq:s.nextOrderSeq+1,custScreen:'orderStatus'};
+  });
+  toggleAvailability=(id)=>this.setState(s=>({menuItems:s.menuItems.map(m=>m.id===id?{...m,available:!m.available}:m)}));
+  advanceOrder=(id)=>this.setState(s=>{
+    const seq=['new','preparing','ready','served'];
+    return {orders:s.orders.map(o=>{
+      if(o.id!==id) return o;
+      const idx=seq.indexOf(o.status);
+      return idx<seq.length-1?{...o,status:seq[idx+1]}:o;
+    })};
+  });
+  cycleTableStatus=(id)=>this.setState(s=>{
+    const seq=['empty','seated','billRequested','cleaning'];
+    return {tables:s.tables.map(t=>{
+      if(t.id!==id) return t;
+      const idx=seq.indexOf(t.status);
+      return {...t,status:seq[(idx+1)%seq.length]};
+    })};
+  });
+  markPaid=()=>this.setState(s=>({orders:s.orders.map(o=>o.id===s.currentOrderId?{...o,paid:true}:o)}));
+  simulateQueueReady=()=>this.setState({custScreen:'menu'});
+  openOtp=()=>this.setState({otpOpen:true});
+  closeOtp=()=>this.setState({otpOpen:false});
+  setAskInput=(v)=>this.setState({askInput:v});
+  askPreset=(key)=>this.setState(s=>{
+    const qa = key==='tuesday'
+      ? {q:'Why was Tuesday slow?', a:"Tuesday's lunch covers ran about 40% below your 4-week average — no holiday or event nearby, likely just a quiet midweek lull. Dinner recovered to a normal pace by 8pm."}
+      : {q:'What should I prep more of tomorrow?', a:"Tomorrow is a Friday during a long weekend — prep about 20% more paneer and butter than a usual Friday. Your last three long-weekend Fridays each ran 20–24% above baseline on paneer dishes."};
+    return {askLog:[...s.askLog,qa]};
+  });
+  askPresetStockout=()=>this.setState(s=>{
+    const qa={q:'86 the item about to run out', a:"Butter is trending toward a stockout by 8:30pm at tonight's pace. I can mark Dal Makhani (its heaviest user) unavailable once stock hits zero — want me to do that now?", proposal:{status:'pending', actionText:'Mark "Dal Makhani" unavailable', itemId:4}};
+    return {askLog:[...s.askLog,qa]};
+  });
+  approveAskProposal=(i)=>this.setState(s=>{
+    const askLog=s.askLog.slice();
+    const qa=askLog[i];
+    if(!qa||!qa.proposal) return {};
+    askLog[i]={...qa,proposal:{...qa.proposal,status:'approved'}};
+    const menuItems = qa.proposal.itemId ? s.menuItems.map(m=>m.id===qa.proposal.itemId?{...m,available:false}:m) : s.menuItems;
+    return {askLog,menuItems,agentActions:[{id:Date.now(),agent:'Anumaan Agent',proposal:qa.proposal.actionText,basis:'Requested via Ask Anumaan',status:'approved',time:'Just now'},...s.agentActions]};
+  });
+  rejectAskProposal=(i)=>this.setState(s=>{
+    const askLog=s.askLog.slice();
+    const qa=askLog[i];
+    if(!qa||!qa.proposal) return {};
+    askLog[i]={...qa,proposal:{...qa.proposal,status:'rejected'}};
+    return {askLog,agentActions:[{id:Date.now(),agent:'Anumaan Agent',proposal:qa.proposal.actionText,basis:'Requested via Ask Anumaan',status:'rejected',time:'Just now'},...s.agentActions]};
+  });
+  approvePrep=()=>this.setState(s=>({
+    prepProposal:{...s.prepProposal,status:'approved'},
+    agentActions:[{id:Date.now(),agent:'Prep & Forecast Agent',proposal:s.prepProposal.text,basis:s.prepProposal.basis,status:'approved',time:'Just now'},...s.agentActions]
+  }));
+  rejectPrep=()=>this.setState(s=>({
+    prepProposal:{...s.prepProposal,status:'rejected'},
+    agentActions:[{id:Date.now(),agent:'Prep & Forecast Agent',proposal:s.prepProposal.text,basis:s.prepProposal.basis,status:'rejected',time:'Just now'},...s.agentActions]
+  }));
+  submitAsk=()=>this.setState(s=>{
+    const q=s.askInput.trim();
+    if(!q) return {};
+    const a="Based on the last 4 weeks logged for this restaurant, that pattern tracks closest to Friday and Saturday dinner service (7–9pm). I'd keep a buffer through the weekend and re-check after tonight's close.";
+    return {askLog:[...s.askLog,{q,a}],askInput:''};
+  });
+  adjustStock=(id,delta)=>this.setState(s=>({inventory:s.inventory.map(it=>it.id===id?{...it,stock:Math.max(0,+(it.stock+delta).toFixed(1))}:it)}));
+  toggleCompliance=(id)=>this.setState(s=>({complianceChecklist:s.complianceChecklist.map(c=>c.id===id?{...c,checked:!c.checked,time:!c.checked?'Just now':''}:c)}));
+  addMenuItemStub=()=>this.setState(s=>({menuItems:[...s.menuItems,{id:Date.now(),name:'New Item',category:'Mains',veg:true,price:0,available:true,desc:'Add a description.'}]}));
+  setOrderFilter=(f)=>this.setState({orderFilter:f});
+
+  renderVals(){
+    const s=this.state;
+    const L = s.lang==='hi' ? {...EN,...HI} : EN;
+    const navBtnClass=(active)=>active?'btn-primary':'btn-ghost';
+    const vegDot=(veg)=>veg
+      ? {width:'10px',height:'10px',border:'1.5px solid var(--color-text)',background:'transparent',flexShrink:'0'}
+      : {width:'10px',height:'10px',border:'1.5px solid var(--color-accent-700)',background:'var(--color-accent-700)',flexShrink:'0'};
+    const orderTagClass=(status)=>'tag '+(status==='new'?'tag-outline':status==='preparing'?'tag-accent':status==='ready'?'tag-accent-2':'tag-neutral');
+    const tableTagClass=(status)=>'tag '+(status==='empty'?'tag-neutral':status==='seated'?'tag-outline':status==='billRequested'?'tag-accent':'tag-neutral');
+    const complianceTagClass=(checked)=>'tag '+(checked?'tag-accent':'tag-outline');
+    const agentTagClass=(status)=>'tag '+(status==='approved'?'tag-accent':status==='rejected'?'tag-neutral':'tag-outline');
+
+    let filtered = s.menuItems.filter(m=>{
+      if(s.vegFilter==='veg' && !m.veg) return false;
+      if(s.vegFilter==='nonveg' && m.veg) return false;
+      if(s.searchQuery && !m.name.toLowerCase().includes(s.searchQuery.toLowerCase())) return false;
+      return true;
+    });
+    let prevCat=null;
+    const filteredMenu = filtered.map(m=>{
+      const showCategoryHeader = m.category!==prevCat;
+      prevCat=m.category;
+      return {...m,showCategoryHeader,notAvailable:!m.available,vegDotStyle:vegDot(m.veg),slotId:'dish-'+m.id,
+        selectHandler:()=>this.selectItem(m.id),
+        addHandler:(e)=>{e.stopPropagation();this.addToCart(m.id);}};
+    });
+
+    const cartCount = s.cart.reduce((n,c)=>n+c.qty,0);
+    const cartItems = s.cart.map(c=>{
+      const m=s.menuItems.find(mi=>mi.id===c.itemId);
+      return {...c,name:m.name,price:m.price,lineTotal:m.price*c.qty,incHandler:()=>this.changeCartQty(c.itemId,1),decHandler:()=>this.changeCartQty(c.itemId,-1)};
+    });
+    const cartTotal = cartItems.reduce((n,c)=>n+c.lineTotal,0);
+
+    const selectedItemRaw = s.menuItems.find(m=>m.id===s.selectedItemId) || s.menuItems[0];
+    const selectedItem = {...selectedItemRaw,vegDotStyle:vegDot(selectedItemRaw.veg),slotId:'dish-'+selectedItemRaw.id};
+    const selectedItemInCartQty = (s.cart.find(c=>c.itemId===selectedItem.id)||{}).qty||0;
+
+    const seq=['new','preparing','ready','served'];
+    const currentOrderRaw = s.orders.find(o=>o.id===s.currentOrderId)||null;
+    const hasCurrentOrder=!!currentOrderRaw;
+    const idx = currentOrderRaw?seq.indexOf(currentOrderRaw.status):-1;
+    const currentOrder = currentOrderRaw
+      ? {...currentOrderRaw,itemsSummary:currentOrderRaw.items.map(i=>i.qty+'x '+i.name).join(', ')}
+      : {table:12,itemsSummary:'',status:'new',total:0,paid:false};
+    const canPay = idx>=2;
+
+    const enrichOrder=(o)=>({...o,
+      itemsSummary:o.items.map(i=>i.qty+'x '+i.name).join(', '),
+      statusLabel: o.status==='new'?L.new:o.status==='preparing'?L.preparing:o.status==='ready'?L.ready:L.served,
+      tagClass: orderTagClass(o.status),
+      advanceHandler: o.status!=='served' ? ()=>this.advanceOrder(o.id) : null
+    });
+    const newOrders=s.orders.filter(o=>o.status==='new').map(enrichOrder);
+    const preparingOrders=s.orders.filter(o=>o.status==='preparing').map(enrichOrder);
+    const readyOrders=s.orders.filter(o=>o.status==='ready').map(enrichOrder);
+    const servedOrders=s.orders.filter(o=>o.status==='served').map(enrichOrder);
+
+    const tableStatusLabel={empty:'Empty',seated:'Seated',billRequested:'Bill requested',cleaning:'Needs cleaning'};
+    const tablesEnriched = s.tables.map(t=>({...t,label:tableStatusLabel[t.status],tagClass:tableTagClass(t.status),cycleHandler:()=>this.cycleTableStatus(t.id)}));
+
+    const menuEnrichedFull = s.menuItems.map(m=>({...m,vegDotStyle:vegDot(m.veg),slotId:'dish-'+m.id,
+      toggleHandler:()=>this.toggleAvailability(m.id),
+      toggleLabel: m.available ? "Mark 86'd" : 'Mark available',
+      toggleBtnClass: m.available?'btn-secondary':'btn-primary'
+    }));
+
+    const ownerNavBase=[
+      {key:'briefing',label:L.briefing},{key:'orders',label:L.orders},{key:'tables',label:L.tables},
+      {key:'inventory',label:L.inventory},{key:'staff',label:L.staff},{key:'customers',label:L.customers},
+      {key:'sales',label:L.sales},{key:'ask',label:L.ask},{key:'agents',label:L.agents},{key:'compliance',label:L.compliance},{key:'settings',label:L.settings}
+    ];
+    const ownerNav = ownerNavBase.map(n=>{
+      const active=s.ownScreen===n.key;
+      return {...n,onClick:()=>this.goOwner(n.key),btnClass:active?'btn-primary':'btn-ghost'};
+    });
+
+    const inventoryEnriched = s.inventory.map(it=>{
+      const pct=Math.min(100,Math.round(it.stock/it.max*100));
+      return {...it,
+        barOuter:{width:'100%',height:'8px',background:'var(--color-neutral-300)',marginTop:'4px',marginBottom:'8px'},
+        barFill:{width:pct+'%',height:'100%',background: it.stockout?'var(--color-accent)':(it.low?'var(--color-accent-400)':'var(--color-text)')},
+        incHandler:()=>this.adjustStock(it.id,1),
+        decHandler:()=>this.adjustStock(it.id,-1)
+      };
+    });
+
+    const complianceEnriched = s.complianceChecklist.map(c=>({...c,toggleHandler:()=>this.toggleCompliance(c.id),tagClass:complianceTagClass(c.checked),statusLabel:c.checked?'Done':'Pending'}));
+
+    const orderFilters=['all','new','preparing','ready','served'];
+    const ownerOrderFilterBtns = orderFilters.map(f=>({key:f,label:f==='all'?L.all:(f==='new'?L.new:f==='preparing'?L.preparing:f==='ready'?L.ready:L.served),onClick:()=>this.setOrderFilter(f),btnClass:s.orderFilter===f?'btn-primary':'btn-secondary'}));
+    const ownerOrders = s.orders.filter(o=>s.orderFilter==='all'||o.status===s.orderFilter).map(enrichOrder);
+
+    const peakHours=[{hour:'12pm',pct:40},{hour:'1pm',pct:65},{hour:'2pm',pct:35},{hour:'7pm',pct:80},{hour:'8pm',pct:100},{hour:'9pm',pct:70}]
+      .map(h=>({...h,barStyle:{width:'28px',height:(h.pct*1.2)+'px',background:'var(--color-text)'}}));
+
+    const forecastBars=[{hour:'12',forecast:30,actual:28},{hour:'1',forecast:50,actual:55},{hour:'7',forecast:70,actual:0},{hour:'8',forecast:95,actual:0}]
+      .map(f=>({...f,fStyle:{width:'20px',height:(f.forecast*0.9)+'px',background:'var(--color-neutral-300)'},aStyle:{width:'20px',height:(f.actual*0.9)+'px',background:'var(--color-text)'}}));
+
+    const askLogEnriched = s.askLog.map((qa,i)=>({
+      ...qa,
+      hasProposal: !!qa.proposal,
+      proposalPending: !!qa.proposal && qa.proposal.status==='pending',
+      proposalApproved: !!qa.proposal && qa.proposal.status==='approved',
+      proposalRejected: !!qa.proposal && qa.proposal.status==='rejected',
+      approveHandler:()=>this.approveAskProposal(i),
+      rejectHandler:()=>this.rejectAskProposal(i)
+    }));
+    const statusLabelMap={approved:'Approved',rejected:'Rejected','auto-executed':'Auto-executed'};
+    const agentActionsEnriched = s.agentActions.map(a=>({...a,statusLabel:statusLabelMap[a.status]||a.status,tagClass:agentTagClass(a.status)}));
+
+    return {
+      isCustomer:s.surface==='customer', isKitchen:s.surface==='kitchen', isOwner:s.surface==='owner',
+      custBtnClass:navBtnClass(s.surface==='customer'), kitBtnClass:navBtnClass(s.surface==='kitchen'), ownBtnClass:navBtnClass(s.surface==='owner'),
+      setSurfaceCustomer:()=>this.setSurface('customer'), setSurfaceKitchen:()=>this.setSurface('kitchen'), setSurfaceOwner:()=>this.setSurface('owner'),
+      langEnClass:navBtnClass(s.lang==='en'), langHiClass:navBtnClass(s.lang==='hi'),
+      langIsEn:s.lang==='en', langIsHi:s.lang==='hi',
+      setLangEn:()=>this.setLang('en'), setLangHi:()=>this.setLang('hi'),
+      labels:L,
+
+      isCustMenu:s.custScreen==='menu', isCustItem:s.custScreen==='item', isCustCart:s.custScreen==='cart',
+      isCustOrderStatus:s.custScreen==='orderStatus', isCustQueue:s.custScreen==='queue', isCustBill:s.custScreen==='bill',
+      goMenu:()=>this.goCustomer('menu'), goCart:()=>this.goCustomer('cart'), goQueue:()=>this.goCustomer('queue'), goBillScreen:()=>this.goCustomer('bill'),
+      filteredMenu, cartCount, cartItems, cartTotal, cartEmpty:cartItems.length===0,
+      selectedItem, selectedItemInCartQty, addSelectedToCart:()=>this.addToCart(selectedItem.id),
+      vegAllChecked:s.vegFilter==='all', vegVegChecked:s.vegFilter==='veg', vegNonvegChecked:s.vegFilter==='nonveg',
+      setVegAll:()=>this.setVegFilter('all'), setVegVeg:()=>this.setVegFilter('veg'), setVegNonveg:()=>this.setVegFilter('nonveg'),
+      searchQuery:s.searchQuery, onSearchInput:(e)=>this.setSearchQuery(e.target.value),
+      confirmOrderHandler:this.confirmOrder,
+      currentOrder, hasCurrentOrder, noCurrentOrder:!hasCurrentOrder,
+      stepNewClass:'tag tag-accent', stepPrepClass:'tag '+(idx>=1?'tag-accent':'tag-neutral'), stepReadyClass:'tag '+(idx>=2?'tag-accent':'tag-neutral'), stepServedClass:'tag '+(idx>=3?'tag-accent':'tag-neutral'),
+      openOtp:this.openOtp, closeOtp:this.closeOtp, otpOpen:s.otpOpen,
+      billVisible: hasCurrentOrder && canPay, notBillVisible: !(hasCurrentOrder && canPay),
+      currentOrderPaid: hasCurrentOrder ? currentOrderRaw.paid : false,
+      notCurrentOrderPaid: hasCurrentOrder ? !currentOrderRaw.paid : true,
+      markPaidHandler:this.markPaid,
+      queueEntries: s.queueEntries.map((q,i)=>({...q,position:i+1})), yourQueuePosition:s.queueEntries.length+1, yourQueueWait:22,
+      simulateQueueReady:this.simulateQueueReady,
+
+      kitQueueBtnClass:navBtnClass(s.kitScreen==='queue'), kitTablesBtnClass:navBtnClass(s.kitScreen==='tables'), kitAvailBtnClass:navBtnClass(s.kitScreen==='availability'),
+      goKitQueue:()=>this.goKitchen('queue'), goKitTables:()=>this.goKitchen('tables'), goKitAvail:()=>this.goKitchen('availability'),
+      isKitQueue:s.kitScreen==='queue', isKitTables:s.kitScreen==='tables', isKitAvail:s.kitScreen==='availability',
+      newOrders, preparingOrders, readyOrders, servedOrders,
+      tablesEnriched, availabilityGrid:menuEnrichedFull,
+
+      ownerNav,
+      isOwnBriefing:s.ownScreen==='briefing', isOwnOrders:s.ownScreen==='orders', isOwnTables:s.ownScreen==='tables',
+      isOwnInventory:s.ownScreen==='inventory', isOwnStaff:s.ownScreen==='staff', isOwnCustomers:s.ownScreen==='customers',
+      isOwnSales:s.ownScreen==='sales', isOwnAsk:s.ownScreen==='ask', isOwnAgents:s.ownScreen==='agents', isOwnCompliance:s.ownScreen==='compliance', isOwnSettings:s.ownScreen==='settings',
+      goInventoryFromBriefing:()=>this.goOwner('inventory'), goAskFromBriefing:()=>this.goOwner('ask'),
+      prepProposalText:s.prepProposal.text, prepProposalBasis:s.prepProposal.basis,
+      prepPending:s.prepProposal.status==='pending', prepApproved:s.prepProposal.status==='approved', prepRejected:s.prepProposal.status==='rejected',
+      approvePrepHandler:this.approvePrep, rejectPrepHandler:this.rejectPrep,
+      forecastBars,
+      ownerOrderFilterBtns, ownerOrders,
+      tablesEnrichedOwner:tablesEnriched,
+      inventoryEnriched,
+      staffList:s.staff,
+      customersList:s.customers,
+      peakHours,
+      askLog:s.askLog, askLogEnriched, askInput:s.askInput, onAskInputChange:(e)=>this.setAskInput(e.target.value),
+      submitAskHandler:this.submitAsk, askPresetTuesday:()=>this.askPreset('tuesday'), askPresetPrep:()=>this.askPreset('prep'), askPresetStockout:this.askPresetStockout,
+      complianceEnriched,
+      agentActionsEnriched, agentActionsEmpty: s.agentActions.length===0,
+      settingsMenu:menuEnrichedFull, addMenuItemHandler:this.addMenuItemStub
+    };
+  }
+}
+</script>
+</body>
+</html>

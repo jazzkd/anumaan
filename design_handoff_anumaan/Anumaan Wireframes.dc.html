@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+::selection{background:#c73a25;color:#fff}
+a{color:#c73a25}
+a:hover{color:#8a2818}
+input,textarea,button{font-family:inherit}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid #c73a25;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#f6f4ee;color:#1a1a1a;font-family:system-ui,-apple-system,sans-serif;padding-bottom:80px">
+
+<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:2px solid #1a1a1a;flex-wrap:wrap;gap:12px;background:#f6f4ee;position:sticky;top:0;z-index:20">
+<div style="display:flex;align-items:baseline;gap:10px">
+<div style="font-family:'Kalam',cursive;font-size:26px;font-weight:700">Anumaan</div>
+<div style="font-size:12px;color:#726e66">low-fi wireframes · v0.1 — flow &amp; layout exploration</div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button onClick="{{ setSurfaceCustomer }}" style="{{ custTabStyle }}">{{ labels.navCustomer }}</button>
+<button onClick="{{ setSurfaceKitchen }}" style="{{ kitTabStyle }}">{{ labels.navKitchen }}</button>
+<button onClick="{{ setSurfaceOwner }}" style="{{ ownTabStyle }}">{{ labels.navOwner }}</button>
+</div>
+<div style="display:flex;gap:6px">
+<button onClick="{{ setLangEn }}" style="{{ langEnStyle }}">EN</button>
+<button onClick="{{ setLangHi }}" style="{{ langHiStyle }}">हिं</button>
+</div>
+</div>
+
+<div style="padding:32px 20px">
+
+<sc-if value="{{ isCustomer }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;justify-content:center">
+<div style="width:390px;max-width:100%;border:2px solid #1a1a1a;border-radius:28px;padding:14px;background:#fff;box-shadow:4px 4px 0 #1a1a1a;position:relative">
+
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 4px 14px;border-bottom:2px solid #1a1a1a;margin-bottom:14px">
+<div style="font-size:13px;font-weight:700">Anumaan · Table 12</div>
+<button onClick="{{ goCart }}" style="position:relative;border:2px solid #1a1a1a;border-radius:999px;background:#fff;padding:6px 10px;font-size:12px;cursor:pointer">
+{{ labels.viewCart }}
+<sc-if value="{{ cartCount }}" hint-placeholder-val="{{ 0 }}">
+<span style="position:absolute;top:-8px;right:-8px;background:#c73a25;color:#fff;border-radius:999px;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center">{{ cartCount }}</span>
+</sc-if>
+</button>
+</div>
+
+<sc-if value="{{ isCustMenu }}" hint-placeholder-val="{{ true }}">
+<div>
+<input value="{{ searchQuery }}" onChange="{{ onSearchInput }}" placeholder="{{ labels.search }}" style="width:100%;padding:8px 10px;border:2px solid #1a1a1a;border-radius:8px;font-size:13px;margin-bottom:10px"/>
+<div style="display:flex;gap:6px;margin-bottom:14px">
+<button onClick="{{ setVegAll }}" style="{{ vegAllChipStyle }}">{{ labels.all }}</button>
+<button onClick="{{ setVegVeg }}" style="{{ vegVegChipStyle }}">{{ labels.veg }}</button>
+<button onClick="{{ setVegNonveg }}" style="{{ vegNonvegChipStyle }}">{{ labels.nonveg }}</button>
+</div>
+<sc-for list="{{ filteredMenu }}" as="item" hint-placeholder-count="6">
+<sc-if value="{{ item.showCategoryHeader }}" hint-placeholder-val="{{ false }}">
+<div style="font-family:'Kalam',cursive;font-size:15px;font-weight:700;margin:14px 0 6px;color:#726e66">{{ item.category }}</div>
+</sc-if>
+<div onClick="{{ item.selectHandler }}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #d8d3c6;cursor:pointer">
+<div style="width:40px;height:40px;border:2px solid #1a1a1a;border-radius:8px;flex-shrink:0;background:#f6f4ee">
+<svg width="100%" height="100%" viewBox="0 0 40 40"><line x1="4" y1="4" x2="36" y2="36" stroke="#d8d3c6" stroke-width="2"></line><line x1="36" y1="4" x2="4" y2="36" stroke="#d8d3c6" stroke-width="2"></line></svg>
+</div>
+<span style="{{ item.vegDotStyle }}"></span>
+<div style="flex:1">
+<div style="font-size:14px;font-weight:600">{{ item.name }}</div>
+<div style="font-size:12px;color:#726e66">₹{{ item.price }}</div>
+</div>
+<sc-if value="{{ item.available }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ item.addHandler }}" style="border:2px solid #1a1a1a;border-radius:999px;background:#fff;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer">{{ labels.addToCart }}</button>
+</sc-if>
+<sc-if value="{{ item.notAvailable }}" hint-placeholder-val="{{ false }}">
+<span style="font-size:11px;color:#8a2f2f;font-weight:700">{{ labels.soldOut }}</span>
+</sc-if>
+</div>
+</sc-for>
+<div style="text-align:center;margin-top:18px">
+<button onClick="{{ goQueue }}" style="background:none;border:none;color:#c73a25;font-size:12px;text-decoration:underline;cursor:pointer;font-weight:600">{{ labels.joinQueue }}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCustItem }}" hint-placeholder-val="{{ false }}">
+<div>
+<button onClick="{{ goMenu }}" style="background:none;border:none;font-size:12px;color:#726e66;cursor:pointer;margin-bottom:10px">← {{ labels.back }}</button>
+<div style="width:100%;height:160px;border:2px solid #1a1a1a;border-radius:10px;margin-bottom:12px;background:#f6f4ee">
+<svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="none"><line x1="0" y1="0" x2="100" y2="60" stroke="#d8d3c6" stroke-width="1"></line><line x1="100" y1="0" x2="0" y2="60" stroke="#d8d3c6" stroke-width="1"></line></svg>
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+<span style="{{ selectedItem.vegDotStyle }}"></span>
+<div style="font-size:18px;font-weight:700">{{ selectedItem.name }}</div>
+</div>
+<div style="font-size:14px;color:#726e66;margin-bottom:10px">₹{{ selectedItem.price }}</div>
+<p style="font-size:13px;line-height:1.5;color:#3a3833;margin-bottom:16px">{{ selectedItem.desc }}</p>
+<button onClick="{{ addSelectedToCart }}" style="width:100%;padding:11px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:14px;cursor:pointer">{{ labels.addToCart }}</button>
+<sc-if value="{{ selectedItemInCartQty }}" hint-placeholder-val="{{ 0 }}">
+<div style="text-align:center;font-size:12px;color:#726e66;margin-top:8px">In cart: {{ selectedItemInCartQty }}</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCustCart }}" hint-placeholder-val="{{ false }}">
+<div>
+<sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+<div style="text-align:center;padding:40px 0;color:#726e66;font-size:13px">{{ labels.yourCartEmpty }}</div>
+<div style="text-align:center">
+<button onClick="{{ goMenu }}" style="padding:8px 18px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;cursor:pointer;font-size:13px;font-weight:600">{{ labels.menuHome }}</button>
+</div>
+</sc-if>
+<sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="0">
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #d8d3c6">
+<div style="flex:1;font-size:13px;font-weight:600">{{ ci.name }}</div>
+<button onClick="{{ ci.decHandler }}" style="width:26px;height:26px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;cursor:pointer">–</button>
+<div style="width:20px;text-align:center;font-size:13px">{{ ci.qty }}</div>
+<button onClick="{{ ci.incHandler }}" style="width:26px;height:26px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;cursor:pointer">+</button>
+<div style="width:56px;text-align:right;font-size:13px">₹{{ ci.lineTotal }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ cartTotal }}" hint-placeholder-val="{{ 0 }}">
+<div style="display:flex;justify-content:space-between;padding:14px 0;font-weight:700;font-size:14px"><span>Total</span><span>₹{{ cartTotal }}</span></div>
+<button onClick="{{ confirmOrderHandler }}" style="width:100%;padding:11px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:14px;cursor:pointer">{{ labels.confirmOrder }}</button>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCustOrderStatus }}" hint-placeholder-val="{{ false }}">
+<div>
+<sc-if value="{{ noCurrentOrder }}" hint-placeholder-val="{{ false }}">
+<div style="text-align:center;padding:30px 0;color:#726e66;font-size:13px">{{ labels.noActiveOrder }}</div>
+<div style="text-align:center"><button onClick="{{ goMenu }}" style="padding:8px 18px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;cursor:pointer;font-size:13px;font-weight:600">{{ labels.menuHome }}</button></div>
+</sc-if>
+<sc-if value="{{ hasCurrentOrder }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:13px;color:#726e66;margin-bottom:14px">{{ currentOrder.itemsSummary }} · Table {{ currentOrder.table }}</div>
+<div style="display:flex;justify-content:space-between;margin-bottom:20px">
+<div style="text-align:center;flex:1"><div style="{{ stepNewStyle }}"></div><div style="font-size:11px">{{ labels.new }}</div></div>
+<div style="text-align:center;flex:1"><div style="{{ stepPrepStyle }}"></div><div style="font-size:11px">{{ labels.preparing }}</div></div>
+<div style="text-align:center;flex:1"><div style="{{ stepReadyStyle }}"></div><div style="font-size:11px">{{ labels.ready }}</div></div>
+<div style="text-align:center;flex:1"><div style="{{ stepServedStyle }}"></div><div style="font-size:11px">{{ labels.served }}</div></div>
+</div>
+<div style="font-size:13px;text-align:center;color:#726e66;margin-bottom:16px">Total ₹{{ currentOrder.total }}</div>
+<button onClick="{{ openOtp }}" style="width:100%;padding:9px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:12px;cursor:pointer;margin-bottom:8px">{{ labels.getNotified }}</button>
+<sc-if value="{{ billVisible }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ goBillScreen }}" style="width:100%;padding:11px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:14px;cursor:pointer">{{ labels.bill }}</button>
+</sc-if>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCustQueue }}" hint-placeholder-val="{{ false }}">
+<div>
+<input placeholder="Your name" style="width:100%;padding:8px 10px;border:2px solid #1a1a1a;border-radius:8px;font-size:13px;margin-bottom:8px"/>
+<input placeholder="Phone number" style="width:100%;padding:8px 10px;border:2px solid #1a1a1a;border-radius:8px;font-size:13px;margin-bottom:14px"/>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;text-align:center;margin-bottom:14px">
+<div style="font-size:12px;color:#726e66">Your position</div>
+<div style="font-size:28px;font-weight:700;font-family:'Kalam',cursive">#{{ yourQueuePosition }}</div>
+<div style="font-size:12px;color:#726e66">~{{ yourQueueWait }} min estimated wait</div>
+</div>
+<sc-for list="{{ queueEntries }}" as="q" hint-placeholder-count="2">
+<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #d8d3c6"><span>#{{ q.position }} {{ q.name }}</span><span>~{{ q.waitMin }} min</span></div>
+</sc-for>
+<button onClick="{{ simulateQueueReady }}" style="width:100%;margin-top:14px;padding:11px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:13px;cursor:pointer">{{ labels.simulateReady }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCustBill }}" hint-placeholder-val="{{ false }}">
+<div>
+<sc-if value="{{ notBillVisible }}" hint-placeholder-val="{{ true }}">
+<div style="text-align:center;padding:30px 0;color:#726e66;font-size:13px">Your bill will appear here once your order is ready.</div>
+</sc-if>
+<sc-if value="{{ billVisible }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:13px;color:#726e66;margin-bottom:10px">{{ currentOrder.itemsSummary }}</div>
+<div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px;padding:10px 0;border-top:2px solid #1a1a1a;border-bottom:2px solid #1a1a1a;margin-bottom:16px"><span>Total</span><span>₹{{ currentOrder.total }}</span></div>
+<div style="width:120px;height:120px;border:2px solid #1a1a1a;border-radius:10px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#726e66;text-align:center">UPI QR<br/>placeholder</div>
+<div style="font-size:11px;text-align:center;color:#726e66;margin-bottom:14px;word-break:break-all">upi://pay?pa=anumaan@upi&amp;am={{ currentOrder.total }}</div>
+<sc-if value="{{ currentOrderPaid }}" hint-placeholder-val="{{ false }}">
+<div style="text-align:center;font-weight:700;color:#2f7d3a">Paid ✓</div>
+</sc-if>
+<sc-if value="{{ notCurrentOrderPaid }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ markPaidHandler }}" style="width:100%;padding:11px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:14px;cursor:pointer">{{ labels.payNow }}</button>
+</sc-if>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ otpOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:50">
+<div style="background:#fff;border:2px solid #1a1a1a;border-radius:14px;padding:20px;width:280px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<div style="font-weight:700;font-size:14px">{{ labels.getNotified }}</div>
+<button onClick="{{ closeOtp }}" style="border:none;background:none;font-size:18px;cursor:pointer">×</button>
+</div>
+<input placeholder="Phone number" style="width:100%;padding:8px;border:2px solid #1a1a1a;border-radius:8px;margin-bottom:8px;font-size:13px"/>
+<button style="width:100%;padding:9px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:13px;cursor:pointer">{{ labels.sendOtp }}</button>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isKitchen }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;justify-content:center">
+<div style="width:100%;max-width:920px;border:2px solid #1a1a1a;border-radius:16px;padding:18px;background:#fff;box-shadow:4px 4px 0 #1a1a1a">
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+<button onClick="{{ goKitQueue }}" style="{{ kitQueueTabStyle }}">Order Queue</button>
+<button onClick="{{ goKitTables }}" style="{{ kitTablesTabStyle }}">{{ labels.tables }}</button>
+<button onClick="{{ goKitAvail }}" style="{{ kitAvailTabStyle }}">{{ labels.availability }}</button>
+</div>
+
+<sc-if value="{{ isKitQueue }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+<div>
+<div style="font-weight:700;font-size:13px;margin-bottom:8px">{{ labels.new }}</div>
+<sc-for list="{{ newOrders }}" as="o" hint-placeholder-count="1">
+<div onClick="{{ o.advanceHandler }}" style="border:2px solid #1a1a1a;border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer;background:#f6f4ee">
+<div style="font-size:12px;font-weight:700">Table {{ o.table }} · {{ o.id }}</div>
+<div style="font-size:11px;color:#726e66;margin:4px 0">{{ o.itemsSummary }}</div>
+<div style="font-size:10px;color:#8a2f2f">{{ o.placedMin }} min ago</div>
+</div>
+</sc-for>
+</div>
+<div>
+<div style="font-weight:700;font-size:13px;margin-bottom:8px">{{ labels.preparing }}</div>
+<sc-for list="{{ preparingOrders }}" as="o" hint-placeholder-count="1">
+<div onClick="{{ o.advanceHandler }}" style="border:2px solid #1a1a1a;border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer;background:#fdf3e4">
+<div style="font-size:12px;font-weight:700">Table {{ o.table }} · {{ o.id }}</div>
+<div style="font-size:11px;color:#726e66;margin:4px 0">{{ o.itemsSummary }}</div>
+<div style="font-size:10px;color:#8a2f2f">{{ o.placedMin }} min ago</div>
+</div>
+</sc-for>
+</div>
+<div>
+<div style="font-weight:700;font-size:13px;margin-bottom:8px">{{ labels.ready }}</div>
+<sc-for list="{{ readyOrders }}" as="o" hint-placeholder-count="1">
+<div onClick="{{ o.advanceHandler }}" style="border:2px solid #1a1a1a;border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer;background:#e9f2ea">
+<div style="font-size:12px;font-weight:700">Table {{ o.table }} · {{ o.id }}</div>
+<div style="font-size:11px;color:#726e66;margin:4px 0">{{ o.itemsSummary }}</div>
+<div style="font-size:10px;color:#2f7d3a">{{ o.placedMin }} min ago</div>
+</div>
+</sc-for>
+</div>
+<div>
+<div style="font-weight:700;font-size:13px;margin-bottom:8px">{{ labels.served }}</div>
+<sc-for list="{{ servedOrders }}" as="o" hint-placeholder-count="1">
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:10px;margin-bottom:8px;background:#efece2;opacity:.7">
+<div style="font-size:12px;font-weight:700">Table {{ o.table }} · {{ o.id }}</div>
+<div style="font-size:11px;color:#726e66;margin:4px 0">{{ o.itemsSummary }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isKitTables }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+<sc-for list="{{ tablesEnriched }}" as="t" hint-placeholder-count="8">
+<div onClick="{{ t.cycleHandler }}" style="{{ t.boxStyle }}">
+<div style="font-size:16px;font-weight:700">T{{ t.id }}</div>
+<div style="font-size:11px">{{ t.label }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isKitAvail }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="font-size:12px;color:#726e66;margin-bottom:12px">Toggling here updates the customer menu instantly — switch to the Customer App to see it live.</div>
+<sc-for list="{{ availabilityGrid }}" as="m" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #d8d3c6">
+<div style="flex:1;font-size:13px;font-weight:600">{{ m.name }}</div>
+<div style="font-size:11px;color:#726e66;width:80px">{{ m.category }}</div>
+<div onClick="{{ m.toggleHandler }}" style="{{ m.switchStyle }}"><div style="{{ m.knobStyle }}"></div></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwner }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:24px;max-width:1200px;margin:0 auto">
+<div style="width:220px;flex-shrink:0;border:2px solid #1a1a1a;border-radius:14px;padding:10px;background:#fff;height:fit-content">
+<sc-for list="{{ ownerNav }}" as="n" hint-placeholder-count="10">
+<div onClick="{{ n.onClick }}" style="{{ n.itemStyle }}">{{ n.label }}</div>
+</sc-for>
+</div>
+<div style="flex:1;min-width:0">
+
+<sc-if value="{{ isOwnBriefing }}" hint-placeholder-val="{{ true }}">
+<div style="border:2px solid #1a1a1a;border-radius:14px;padding:24px;background:#fff;box-shadow:4px 4px 0 #1a1a1a;margin-bottom:20px">
+<div style="font-family:'Kalam',cursive;font-size:22px;font-weight:700;margin-bottom:12px">Good morning, Raj</div>
+<p style="font-size:14px;line-height:1.6;margin:0">
+Yesterday: <strong style="color:#c73a25">₹18,400</strong> revenue across <strong style="color:#c73a25">62 orders</strong>. Dal Makhani sold out at 7:40pm — 6 guests were offered Paneer Butter Masala instead.
+Today: expect a busy Friday dinner. Prep about <strong style="color:#c73a25">20% more paneer</strong> than last Friday — your last three long-weekend Fridays each ran above baseline. Tuesday's usual slow-lunch pattern doesn't apply today.
+</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;background:#fff"><div style="font-size:11px;color:#726e66">Revenue today (so far)</div><div style="font-size:22px;font-weight:700">₹6,200</div></div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;background:#fff"><div style="font-size:11px;color:#726e66">Orders today</div><div style="font-size:22px;font-weight:700">18</div></div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;background:#fff"><div style="font-size:11px;color:#726e66">Top item</div><div style="font-size:18px;font-weight:700">Butter Chicken</div></div>
+</div>
+<div style="border:2px solid #c73a25;border-radius:10px;padding:14px;background:#fbeae7;margin-bottom:20px">
+<div style="font-size:12px;font-weight:700;color:#8a2818;margin-bottom:2px">Stockout risk</div>
+<div style="font-size:13px">Butter stock (1.5kg) is likely to run out by 8:30pm at tonight's forecasted pace.</div>
+<button onClick="{{ goInventoryFromBriefing }}" style="margin-top:8px;padding:6px 14px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:12px;cursor:pointer">{{ labels.inventory }} →</button>
+</div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:16px;background:#fff;margin-bottom:20px">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+<span style="font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border:2px solid #1a1a1a;border-radius:999px">{{ labels.agentProposal }}</span>
+<span style="font-size:12px;font-weight:700;color:#726e66">Prep &amp; Forecast Agent</span>
+</div>
+<div style="font-size:13px;margin-bottom:6px">{{ prepProposalText }}</div>
+<div style="font-size:11px;color:#726e66;margin-bottom:12px">{{ prepProposalBasis }}</div>
+<sc-if value="{{ prepPending }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px">
+<button onClick="{{ approvePrepHandler }}" style="padding:7px 16px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:12px;cursor:pointer">{{ labels.approve }}</button>
+<button onClick="{{ rejectPrepHandler }}" style="padding:7px 16px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-weight:700;font-size:12px;cursor:pointer">{{ labels.reject }}</button>
+</div>
+</sc-if>
+<sc-if value="{{ prepApproved }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;font-weight:700;color:#2f7d3a">Approved — tasks sent to the Kitchen Board</div>
+</sc-if>
+<sc-if value="{{ prepRejected }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;font-weight:700;color:#726e66">Rejected — no tasks created</div>
+</sc-if>
+</div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:16px;background:#fff">
+<div style="font-size:12px;font-weight:700;margin-bottom:10px">Forecast vs actual, today</div>
+<div style="display:flex;gap:16px;align-items:flex-end;height:110px">
+<sc-for list="{{ forecastBars }}" as="f" hint-placeholder-count="4">
+<div style="text-align:center">
+<div style="display:flex;gap:3px;align-items:flex-end;height:90px">
+<div style="{{ f.fStyle }}"></div>
+<div style="{{ f.aStyle }}"></div>
+</div>
+<div style="font-size:10px;color:#726e66;margin-top:4px">{{ f.hour }}</div>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:14px;font-size:11px;color:#726e66;margin-top:8px"><span>▬ forecast</span><span>▬ actual</span></div>
+<button onClick="{{ goAskFromBriefing }}" style="margin-top:10px;padding:6px 14px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:12px;cursor:pointer">{{ labels.ask }} →</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnOrders }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+<sc-for list="{{ ownerOrderFilterBtns }}" as="f" hint-placeholder-count="5">
+<button onClick="{{ f.onClick }}" style="padding:6px 14px;border:2px solid #1a1a1a;border-radius:999px;font-size:12px;cursor:pointer">{{ f.label }}</button>
+</sc-for>
+</div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;overflow:hidden;background:#fff">
+<div style="display:grid;grid-template-columns:70px 1fr 100px 90px;padding:10px 14px;border-bottom:2px solid #1a1a1a;font-size:11px;font-weight:700;color:#726e66"><div>ID</div><div>Items</div><div>Status</div><div>Total</div></div>
+<sc-for list="{{ ownerOrders }}" as="o" hint-placeholder-count="4">
+<div style="display:grid;grid-template-columns:70px 1fr 100px 90px;padding:10px 14px;border-bottom:1px solid #d8d3c6;font-size:12px"><div>{{ o.id }}</div><div>{{ o.itemsSummary }}</div><div>{{ o.statusLabel }}</div><div>₹{{ o.total }}</div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnTables }}" hint-placeholder-val="{{ false }}">
+<div style="border:2px solid #1a1a1a;border-radius:10px;overflow:hidden;background:#fff">
+<div style="display:grid;grid-template-columns:1fr 1fr 120px;padding:10px 14px;border-bottom:2px solid #1a1a1a;font-size:11px;font-weight:700;color:#726e66"><div>Table</div><div>Status</div><div></div></div>
+<sc-for list="{{ tablesEnrichedOwner }}" as="t" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:1fr 1fr 120px;padding:10px 14px;border-bottom:1px solid #d8d3c6;font-size:13px;align-items:center">
+<div>Table {{ t.id }}</div><div>{{ t.label }}</div>
+<div><button onClick="{{ t.cycleHandler }}" style="padding:5px 12px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:11px;cursor:pointer">Cycle</button></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnInventory }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ inventoryEnriched }}" as="it" hint-placeholder-count="6">
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:12px 14px;background:#fff;margin-bottom:10px">
+<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px"><span>{{ it.name }}</span><span>{{ it.stock }} {{ it.unit }}</span></div>
+<div style="{{ it.barOuter }}"><div style="{{ it.barFill }}"></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+<div style="display:flex;gap:8px">
+<sc-if value="{{ it.stockout }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:#c73a25;font-weight:700">Predicted stockout tonight</div></sc-if>
+<sc-if value="{{ it.low }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:#c98a2e;font-weight:700">Low stock</div></sc-if>
+</div>
+<div style="display:flex;gap:6px">
+<button onClick="{{ it.decHandler }}" style="width:24px;height:24px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;cursor:pointer;font-size:12px">–</button>
+<button onClick="{{ it.incHandler }}" style="width:24px;height:24px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;cursor:pointer;font-size:12px">+</button>
+</div>
+</div>
+</div>
+</sc-for>
+</sc-if>
+
+<sc-if value="{{ isOwnStaff }}" hint-placeholder-val="{{ false }}">
+<div style="border:2px solid #1a1a1a;border-radius:10px;overflow:hidden;background:#fff;margin-bottom:10px">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 14px;border-bottom:2px solid #1a1a1a;font-size:11px;font-weight:700;color:#726e66"><div>Name</div><div>Role</div><div>Shift</div></div>
+<sc-for list="{{ staffList }}" as="p" hint-placeholder-count="4">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 14px;border-bottom:1px solid #d8d3c6;font-size:13px"><div>{{ p.name }}</div><div>{{ p.role }}</div><div>{{ p.shift }}</div></div>
+</sc-for>
+</div>
+<div style="font-size:12px;color:#726e66">Attendance from clock-in/out is planned as a follow-up pass (P1).</div>
+</sc-if>
+
+<sc-if value="{{ isOwnCustomers }}" hint-placeholder-val="{{ false }}">
+<div style="border:2px solid #1a1a1a;border-radius:10px;overflow:hidden;background:#fff">
+<div style="display:grid;grid-template-columns:1fr 80px 100px 100px;padding:10px 14px;border-bottom:2px solid #1a1a1a;font-size:11px;font-weight:700;color:#726e66"><div>Name</div><div>Visits</div><div>Last visit</div><div>Phone</div></div>
+<sc-for list="{{ customersList }}" as="cu" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:1fr 80px 100px 100px;padding:10px 14px;border-bottom:1px solid #d8d3c6;font-size:13px"><div>{{ cu.name }}</div><div>{{ cu.visits }}</div><div>{{ cu.lastVisit }}</div><div>{{ cu.phone }}</div></div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnSales }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;background:#fff"><div style="font-size:11px;color:#726e66">Today</div><div style="font-size:20px;font-weight:700">₹18,400</div></div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;background:#fff"><div style="font-size:11px;color:#726e66">This week</div><div style="font-size:20px;font-weight:700">₹1,42,000</div></div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;background:#fff"><div style="font-size:11px;color:#726e66">This month</div><div style="font-size:20px;font-weight:700">₹5,86,000</div></div>
+</div>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:16px;background:#fff">
+<div style="font-size:12px;font-weight:700;margin-bottom:10px">Peak hours (covers)</div>
+<div style="display:flex;gap:14px;align-items:flex-end;height:130px">
+<sc-for list="{{ peakHours }}" as="h" hint-placeholder-count="6">
+<div style="text-align:center"><div style="{{ h.barStyle }}"></div><div style="font-size:10px;color:#726e66;margin-top:4px">{{ h.hour }}</div></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnAsk }}" hint-placeholder-val="{{ false }}">
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:16px;background:#fff">
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+<button onClick="{{ askPresetTuesday }}" style="padding:6px 12px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:12px;cursor:pointer">Why was Tuesday slow?</button>
+<button onClick="{{ askPresetPrep }}" style="padding:6px 12px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:12px;cursor:pointer">What should I prep more of tomorrow?</button>
+<button onClick="{{ askPresetStockout }}" style="padding:6px 12px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:12px;cursor:pointer">86 the item about to run out</button>
+</div>
+<div style="min-height:60px;margin-bottom:12px">
+<sc-for list="{{ askLogEnriched }}" as="qa" hint-placeholder-count="0">
+<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><div style="background:#1a1a1a;color:#fff;border-radius:12px 12px 2px 12px;padding:8px 12px;font-size:12px;max-width:80%">{{ qa.q }}</div></div>
+<div style="display:flex;justify-content:flex-start;margin-bottom:6px"><div style="background:#f6f4ee;border:2px solid #1a1a1a;border-radius:12px 12px 12px 2px;padding:8px 12px;font-size:12px;max-width:80%">{{ qa.a }}</div></div>
+<sc-if value="{{ qa.hasProposal }}" hint-placeholder-val="{{ false }}">
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:10px 12px;margin:0 0 14px;max-width:80%;background:#fff">
+<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#726e66;margin-bottom:4px">{{ labels.proposedAction }}</div>
+<div style="font-size:12px;margin-bottom:8px">{{ qa.proposal.actionText }}</div>
+<sc-if value="{{ qa.proposalPending }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px">
+<button onClick="{{ qa.approveHandler }}" style="padding:6px 14px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:11px;cursor:pointer">{{ labels.approve }}</button>
+<button onClick="{{ qa.rejectHandler }}" style="padding:6px 14px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-weight:700;font-size:11px;cursor:pointer">{{ labels.reject }}</button>
+</div>
+</sc-if>
+<sc-if value="{{ qa.proposalApproved }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#2f7d3a;font-weight:700">Approved &amp; executed</div></sc-if>
+<sc-if value="{{ qa.proposalRejected }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#726e66;font-weight:700">Rejected</div></sc-if>
+</div>
+</sc-if>
+</sc-for>
+</div>
+<div style="display:flex;gap:8px">
+<input value="{{ askInput }}" onChange="{{ onAskInputChange }}" placeholder="Ask about your restaurant's own data..." style="flex:1;padding:9px 12px;border:2px solid #1a1a1a;border-radius:999px;font-size:13px"/>
+<button onClick="{{ submitAskHandler }}" style="padding:9px 18px;border:2px solid #1a1a1a;border-radius:999px;background:#c73a25;color:#fff;font-weight:700;font-size:13px;cursor:pointer">{{ labels.send }}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnAgents }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ agentActionsEnriched }}" as="a" hint-placeholder-count="3">
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:12px 14px;background:#fff;margin-bottom:10px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px">
+<span style="font-size:12px;font-weight:700">{{ a.agent }}</span>
+<span style="{{ a.statusStyle }}">{{ a.statusLabel }}</span>
+</div>
+<div style="font-size:13px;margin-bottom:4px">{{ a.proposal }}</div>
+<div style="font-size:11px;color:#726e66">{{ a.basis }} · {{ a.time }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ agentActionsEmpty }}" hint-placeholder-val="{{ false }}">
+<div style="text-align:center;padding:30px 0;color:#726e66;font-size:13px">No agent activity yet — approve or reject a proposal on the Daily Briefing or Ask Anumaan.</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isOwnCompliance }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ complianceEnriched }}" as="c" hint-placeholder-count="5">
+<div onClick="{{ c.toggleHandler }}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px solid #1a1a1a;border-radius:10px;background:#fff;margin-bottom:8px;cursor:pointer">
+<div style="width:18px;height:18px;border:2px solid #1a1a1a;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px">
+<sc-if value="{{ c.checked }}" hint-placeholder-val="{{ true }}">✓</sc-if>
+</div>
+<div style="flex:1;font-size:13px">{{ c.label }}</div>
+<div style="font-size:11px;color:#726e66">{{ c.time }}</div>
+</div>
+</sc-for>
+<div style="border:2px solid #1a1a1a;border-radius:10px;padding:14px;background:#fff;margin-top:14px;display:flex;gap:14px;align-items:center">
+<div style="width:70px;height:70px;border:2px solid #1a1a1a;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center">FSSAI QR</div>
+<div style="font-size:12px;color:#726e66">FSSAI License #12345678901234 — this QR and license number also show on the customer-facing menu page.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOwnSettings }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ addMenuItemHandler }}" style="margin-bottom:14px;padding:8px 16px;border:2px solid #1a1a1a;border-radius:999px;background:#fff;font-size:12px;font-weight:700;cursor:pointer">{{ labels.addItem }}</button>
+<sc-for list="{{ settingsMenu }}" as="m" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border:2px solid #1a1a1a;border-radius:10px;background:#fff;margin-bottom:8px">
+<span style="{{ m.vegDotStyle }}"></span>
+<div style="flex:1;font-size:13px;font-weight:600">{{ m.name }}</div>
+<div style="font-size:11px;color:#726e66;width:90px">{{ m.category }}</div>
+<div style="font-size:13px;width:56px">₹{{ m.price }}</div>
+<div onClick="{{ m.toggleHandler }}" style="{{ m.switchStyle }}"><div style="{{ m.knobStyle }}"></div></div>
+</div>
+</sc-for>
+</sc-if>
+
+</div>
+</div>
+<button onClick="{{ floatingAskHandler }}" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:999px;border:2px solid #1a1a1a;background:#c73a25;color:#fff;font-size:11px;font-weight:700;cursor:pointer;box-shadow:4px 4px 0 #1a1a1a;z-index:30">Ask</button>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const EN = {
+addToCart:'Add to Cart', viewCart:'Cart', confirmOrder:'Confirm Order', joinQueue:'No table free? Join the queue instead',
+payNow:'Mark as Paid', back:'Back', new:'New', preparing:'Preparing', ready:'Ready', served:'Served',
+navCustomer:'Customer App', navKitchen:'Kitchen Display', navOwner:'Owner Dashboard',
+briefing:'Daily Briefing', orders:'Orders', tables:'Tables', inventory:'Inventory', staff:'Staff',
+customers:'Customers', sales:'Sales & Analytics', ask:'Ask Anumaan', compliance:'Compliance Log', settings:'Settings',
+menuHome:'Menu', queueWait:'Queue / Wait', bill:'View Bill', availability:'Availability',
+search:'Search dishes...', all:'All', veg:'Veg', nonveg:'Non-veg', soldOut:'Sold out',
+addItem:'Add Item', sendOtp:'Send OTP', getNotified:'Get notified via SMS', simulateReady:'Simulate: table is ready',
+send:'Send', yourCartEmpty:'Your cart is empty', noActiveOrder:'No active order yet — place one from the menu.',
+approve:'Approve', reject:'Reject', agents:'Agent Activity Log', agentProposal:'Agent proposal', proposedAction:'Proposed action'
+};
+const HI = {
+addToCart:'कार्ट में जोड़ें', viewCart:'कार्ट', confirmOrder:'ऑर्डर पक्का करें', joinQueue:'टेबल खाली नहीं? कतार में जुड़ें',
+payNow:'भुगतान दर्ज करें', back:'वापस', new:'नया', preparing:'बन रहा है', ready:'तैयार', served:'परोसा गया',
+navCustomer:'ग्राहक ऐप', navKitchen:'किचन डिस्प्ले', navOwner:'मालिक डैशबोर्ड',
+briefing:'दैनिक सारांश', orders:'ऑर्डर', tables:'टेबल', inventory:'भंडार', staff:'स्टाफ',
+customers:'ग्राहक', sales:'बिक्री और विश्लेषण', ask:'अनुमान से पूछें', compliance:'अनुपालन लॉग', settings:'सेटिंग्स',
+menuHome:'मेनू', queueWait:'प्रतीक्षा सूची', bill:'बिल देखें', availability:'उपलब्धता',
+search:'व्यंजन खोजें...', all:'सभी', veg:'शाकाहारी', nonveg:'मांसाहारी', soldOut:'खत्म हो गया',
+addItem:'आइटम जोड़ें', sendOtp:'ओटीपी भेजें', getNotified:'एसएमएस पर सूचना पाएं', simulateReady:'सिमुलेट: टेबल तैयार है',
+send:'भेजें', yourCartEmpty:'आपकी कार्ट खाली है', noActiveOrder:'अभी कोई सक्रिय ऑर्डर नहीं है — मेनू से ऑर्डर करें।',
+approve:'स्वीकृत करें', reject:'अस्वीकार करें', agents:'एजेंट गतिविधि लॉग', agentProposal:'एजेंट प्रस्ताव', proposedAction:'प्रस्तावित कार्रवाई'
+};
+const INK='#1a1a1a', PAPER='#f6f4ee', ACCENT='#c73a25', MUTED='#726e66', LINE='#d8d3c6', VEG='#2f7d3a', NONVEG='#8a2f2f';
+
+class Component extends DCLogic {
+  state = {
+    surface:'customer', lang:'en',
+    custScreen:'menu', kitScreen:'queue', ownScreen:'briefing',
+    vegFilter:'all', searchQuery:'',
+    selectedItemId:3, currentOrderId:null, otpOpen:false,
+    askInput:'', askLog:[],
+    orderFilter:'all', nextOrderSeq:5,
+    prepProposal:{status:'pending', text:'Prep about 20% more paneer-based dishes (Butter Chicken, Paneer Butter Masala, Paneer Tikka) and check Butter stock before dinner service.', basis:"Based on today's orders vs. your seeded Friday average, and Butter trending toward a stockout by 8:30pm."},
+    agentActions:[{id:1,agent:'Compliance Nudge Agent',proposal:'Compliance checklist incomplete at the 9:00 PM cutoff — "Waste bin disposal log" not completed.',basis:"Scheduled 9:00 PM check of today's compliance log",status:'auto-executed',time:'9:00 PM'}],
+    menuItems:[
+      {id:1,name:'Paneer Tikka',category:'Starters',veg:true,price:220,available:true,desc:'Char-grilled cottage cheese marinated in yogurt and spices.'},
+      {id:2,name:'Chicken 65',category:'Starters',veg:false,price:260,available:true,desc:'Deep-fried spiced chicken, a South Indian favorite.'},
+      {id:3,name:'Butter Chicken',category:'Mains',veg:false,price:320,available:true,desc:'Slow-cooked chicken in a creamy tomato-butter gravy, finished with kasuri methi.'},
+      {id:4,name:'Dal Makhani',category:'Mains',veg:true,price:260,available:false,desc:'Black lentils simmered overnight with butter and cream.'},
+      {id:5,name:'Paneer Butter Masala',category:'Mains',veg:true,price:280,available:true,desc:'Cottage cheese in a rich tomato-cashew gravy.'},
+      {id:6,name:'Veg Biryani',category:'Mains',veg:true,price:240,available:true,desc:'Basmati rice layered with mixed vegetables and whole spices.'},
+      {id:7,name:'Chicken Biryani',category:'Mains',veg:false,price:300,available:true,desc:'Basmati rice slow-cooked with marinated chicken and saffron.'},
+      {id:8,name:'Tandoori Roti',category:'Breads',veg:true,price:40,available:true,desc:'Whole-wheat bread baked in the tandoor.'},
+      {id:9,name:'Garlic Naan',category:'Breads',veg:true,price:60,available:true,desc:'Leavened bread topped with garlic and butter.'},
+      {id:10,name:'Gulab Jamun',category:'Desserts',veg:true,price:90,available:true,desc:'Milk-solid dumplings soaked in cardamom sugar syrup.'},
+      {id:11,name:'Masala Chai',category:'Beverages',veg:true,price:50,available:true,desc:'Spiced tea brewed with milk.'},
+      {id:12,name:'Mango Lassi',category:'Beverages',veg:true,price:110,available:true,desc:'Yogurt-based mango smoothie.'}
+    ],
+    cart:[],
+    orders:[
+      {id:'O1',table:3,items:[{name:'Butter Chicken',qty:1},{name:'Garlic Naan',qty:2}],status:'preparing',placedMin:12,total:440,paid:false},
+      {id:'O2',table:7,items:[{name:'Veg Biryani',qty:2}],status:'new',placedMin:2,total:480,paid:false},
+      {id:'O3',table:4,items:[{name:'Paneer Tikka',qty:1},{name:'Masala Chai',qty:2}],status:'ready',placedMin:18,total:320,paid:false},
+      {id:'O4',table:1,items:[{name:'Chicken 65',qty:1}],status:'served',placedMin:40,total:260,paid:true}
+    ],
+    tables:[
+      {id:1,status:'empty'},{id:2,status:'seated'},{id:3,status:'seated'},{id:4,status:'billRequested'},
+      {id:5,status:'empty'},{id:6,status:'cleaning'},{id:7,status:'seated'},{id:8,status:'empty'}
+    ],
+    queueEntries:[{name:'Sharma, party of 4',waitMin:10},{name:'Verma, party of 2',waitMin:18}],
+    inventory:[
+      {id:1,name:'Paneer',stock:2,max:10,unit:'kg',low:true,stockout:false},
+      {id:2,name:'Chicken',stock:5,max:12,unit:'kg',low:false,stockout:false},
+      {id:3,name:'Basmati Rice',stock:10,max:20,unit:'kg',low:false,stockout:false},
+      {id:4,name:'Butter',stock:1.5,max:8,unit:'kg',low:true,stockout:true},
+      {id:5,name:'Onions',stock:8,max:15,unit:'kg',low:false,stockout:false},
+      {id:6,name:'Milk',stock:6,max:12,unit:'L',low:false,stockout:false}
+    ],
+    staff:[
+      {id:1,name:'Meena',role:'Floor',shift:'11am–8pm'},
+      {id:2,name:'Ramesh',role:'Kitchen',shift:'10am–7pm'},
+      {id:3,name:'Suresh',role:'Kitchen',shift:'1pm–10pm'},
+      {id:4,name:'Pooja',role:'Floor',shift:'1pm–10pm'}
+    ],
+    customers:[
+      {id:1,name:'Priya Sharma',visits:12,lastVisit:'2 days ago',phone:'98xxxxxx12'},
+      {id:2,name:'Ankit Verma',visits:3,lastVisit:'1 week ago',phone:'99xxxxxx48'},
+      {id:3,name:'Neha Gupta',visits:7,lastVisit:'Yesterday',phone:'97xxxxxx03'}
+    ],
+    complianceChecklist:[
+      {id:1,label:'Walk-in fridge temperature check — morning',checked:true,time:'9:02 AM'},
+      {id:2,label:'Walk-in fridge temperature check — afternoon',checked:true,time:'3:05 PM'},
+      {id:3,label:'Kitchen surface sanitation',checked:true,time:'11:40 AM'},
+      {id:4,label:'Handwash station stocked',checked:true,time:'9:15 AM'},
+      {id:5,label:'Waste bin disposal log',checked:false,time:''}
+    ]
+  };
+
+  setSurface=(s)=>this.setState({surface:s});
+  setLang=(l)=>this.setState({lang:l});
+  goCustomer=(s)=>this.setState({custScreen:s});
+  goKitchen=(s)=>this.setState({kitScreen:s});
+  goOwner=(s)=>this.setState({ownScreen:s});
+  setVegFilter=(f)=>this.setState({vegFilter:f});
+  setSearchQuery=(v)=>this.setState({searchQuery:v});
+  selectItem=(id)=>this.setState({selectedItemId:id,custScreen:'item'});
+  addToCart=(id)=>this.setState(s=>{
+    const cart=s.cart.slice(); const i=cart.findIndex(c=>c.itemId===id);
+    if(i>=0) cart[i]={...cart[i],qty:cart[i].qty+1}; else cart.push({itemId:id,qty:1});
+    return {cart};
+  });
+  changeCartQty=(id,delta)=>this.setState(s=>{
+    let cart=s.cart.map(c=>c.itemId===id?{...c,qty:c.qty+delta}:c);
+    cart=cart.filter(c=>c.qty>0);
+    return {cart};
+  });
+  confirmOrder=()=>this.setState(s=>{
+    if(s.cart.length===0) return {};
+    const items=s.cart.map(c=>{const m=s.menuItems.find(mi=>mi.id===c.itemId); return {name:m.name,qty:c.qty};});
+    const total=s.cart.reduce((sum,c)=>{const m=s.menuItems.find(mi=>mi.id===c.itemId); return sum+m.price*c.qty;},0);
+    const id='O'+s.nextOrderSeq;
+    const order={id,table:12,items,status:'new',placedMin:0,total,paid:false};
+    return {orders:[...s.orders,order],cart:[],currentOrderId:id,nextOrderSeq:s.nextOrderSeq+1,custScreen:'orderStatus'};
+  });
+  toggleAvailability=(id)=>this.setState(s=>({menuItems:s.menuItems.map(m=>m.id===id?{...m,available:!m.available}:m)}));
+  advanceOrder=(id)=>this.setState(s=>{
+    const seq=['new','preparing','ready','served'];
+    return {orders:s.orders.map(o=>{
+      if(o.id!==id) return o;
+      const idx=seq.indexOf(o.status);
+      return idx<seq.length-1?{...o,status:seq[idx+1]}:o;
+    })};
+  });
+  cycleTableStatus=(id)=>this.setState(s=>{
+    const seq=['empty','seated','billRequested','cleaning'];
+    return {tables:s.tables.map(t=>{
+      if(t.id!==id) return t;
+      const idx=seq.indexOf(t.status);
+      return {...t,status:seq[(idx+1)%seq.length]};
+    })};
+  });
+  markPaid=()=>this.setState(s=>({orders:s.orders.map(o=>o.id===s.currentOrderId?{...o,paid:true}:o)}));
+  simulateQueueReady=()=>this.setState({custScreen:'menu'});
+  openOtp=()=>this.setState({otpOpen:true});
+  closeOtp=()=>this.setState({otpOpen:false});
+  setAskInput=(v)=>this.setState({askInput:v});
+  askPreset=(key)=>this.setState(s=>{
+    const qa = key==='tuesday'
+      ? {q:'Why was Tuesday slow?', a:"Tuesday's lunch covers ran about 40% below your 4-week average — no holiday or event nearby, likely just a quiet midweek lull. Dinner recovered to a normal pace by 8pm."}
+      : {q:'What should I prep more of tomorrow?', a:"Tomorrow is a Friday during a long weekend — prep about 20% more paneer and butter than a usual Friday. Your last three long-weekend Fridays each ran 20–24% above baseline on paneer dishes."};
+    return {askLog:[...s.askLog,qa]};
+  });
+  submitAsk=()=>this.setState(s=>{
+    const q=s.askInput.trim();
+    if(!q) return {};
+    const a="Based on the last 4 weeks logged for this restaurant, that pattern tracks closest to Friday and Saturday dinner service (7–9pm). I'd keep a buffer through the weekend and re-check after tonight's close.";
+    return {askLog:[...s.askLog,{q,a}],askInput:''};
+  });
+  askPresetStockout=()=>this.setState(s=>{
+    const qa={q:'86 the item about to run out', a:"Butter is trending toward a stockout by 8:30pm at tonight's pace. I can mark Dal Makhani (its heaviest user) unavailable once stock hits zero — want me to do that now?", proposal:{status:'pending', actionText:'Mark "Dal Makhani" unavailable', itemId:4}};
+    return {askLog:[...s.askLog,qa]};
+  });
+  approveAskProposal=(i)=>this.setState(s=>{
+    const askLog=s.askLog.slice();
+    const qa=askLog[i];
+    if(!qa||!qa.proposal) return {};
+    askLog[i]={...qa,proposal:{...qa.proposal,status:'approved'}};
+    const menuItems = qa.proposal.itemId ? s.menuItems.map(m=>m.id===qa.proposal.itemId?{...m,available:false}:m) : s.menuItems;
+    return {askLog,menuItems,agentActions:[{id:Date.now(),agent:'Anumaan Agent',proposal:qa.proposal.actionText,basis:'Requested via Ask Anumaan',status:'approved',time:'Just now'},...s.agentActions]};
+  });
+  rejectAskProposal=(i)=>this.setState(s=>{
+    const askLog=s.askLog.slice();
+    const qa=askLog[i];
+    if(!qa||!qa.proposal) return {};
+    askLog[i]={...qa,proposal:{...qa.proposal,status:'rejected'}};
+    return {askLog,agentActions:[{id:Date.now(),agent:'Anumaan Agent',proposal:qa.proposal.actionText,basis:'Requested via Ask Anumaan',status:'rejected',time:'Just now'},...s.agentActions]};
+  });
+  approvePrep=()=>this.setState(s=>({
+    prepProposal:{...s.prepProposal,status:'approved'},
+    agentActions:[{id:Date.now(),agent:'Prep & Forecast Agent',proposal:s.prepProposal.text,basis:s.prepProposal.basis,status:'approved',time:'Just now'},...s.agentActions]
+  }));
+  rejectPrep=()=>this.setState(s=>({
+    prepProposal:{...s.prepProposal,status:'rejected'},
+    agentActions:[{id:Date.now(),agent:'Prep & Forecast Agent',proposal:s.prepProposal.text,basis:s.prepProposal.basis,status:'rejected',time:'Just now'},...s.agentActions]
+  }));
+  adjustStock=(id,delta)=>this.setState(s=>({inventory:s.inventory.map(it=>it.id===id?{...it,stock:Math.max(0,+(it.stock+delta).toFixed(1))}:it)}));
+  toggleCompliance=(id)=>this.setState(s=>({complianceChecklist:s.complianceChecklist.map(c=>c.id===id?{...c,checked:!c.checked,time:!c.checked?'Just now':''}:c)}));
+  addMenuItemStub=()=>this.setState(s=>({menuItems:[...s.menuItems,{id:Date.now(),name:'New Item',category:'Mains',veg:true,price:0,available:true,desc:'Add a description.'}]}));
+  setOrderFilter=(f)=>this.setState({orderFilter:f});
+
+  renderVals(){
+    const s=this.state;
+    const L = s.lang==='hi' ? {...EN,...HI} : EN;
+
+    const tabStyle=(active)=>({padding:'8px 16px',border:'2px solid '+INK,borderRadius:'999px',background:active?INK:'transparent',color:active?PAPER:INK,fontWeight:600,fontSize:'13px',cursor:'pointer'});
+    const langBtnStyle=(active)=>({padding:'6px 12px',border:'2px solid '+(active?ACCENT:INK),borderRadius:'999px',background:active?ACCENT:'transparent',color:active?'#fff':INK,fontWeight:700,fontSize:'12px',cursor:'pointer'});
+    const vegChipStyle=(active)=>({padding:'5px 12px',border:'2px solid '+INK,borderRadius:'999px',fontSize:'11px',cursor:'pointer',background:active?INK:'transparent',color:active?PAPER:INK,fontWeight:600});
+    const vegDot=(veg)=>({width:'10px',height:'10px',borderRadius:'2px',background:veg?VEG:NONVEG,flexShrink:'0'});
+    const dot=(reached)=>({width:'14px',height:'14px',borderRadius:'50%',margin:'0 auto 6px',background:reached?INK:LINE});
+
+    let filtered = s.menuItems.filter(m=>{
+      if(s.vegFilter==='veg' && !m.veg) return false;
+      if(s.vegFilter==='nonveg' && m.veg) return false;
+      if(s.searchQuery && !m.name.toLowerCase().includes(s.searchQuery.toLowerCase())) return false;
+      return true;
+    });
+    let prevCat=null;
+    const filteredMenu = filtered.map(m=>{
+      const showCategoryHeader = m.category!==prevCat;
+      prevCat=m.category;
+      return {...m,showCategoryHeader,
+        notAvailable:!m.available,
+        vegDotStyle:vegDot(m.veg),
+        selectHandler:()=>this.selectItem(m.id),
+        addHandler:(e)=>{e.stopPropagation();this.addToCart(m.id);}
+      };
+    });
+
+    const cartCount = s.cart.reduce((n,c)=>n+c.qty,0);
+    const cartItems = s.cart.map(c=>{
+      const m=s.menuItems.find(mi=>mi.id===c.itemId);
+      return {...c,name:m.name,price:m.price,lineTotal:m.price*c.qty,
+        incHandler:()=>this.changeCartQty(c.itemId,1),
+        decHandler:()=>this.changeCartQty(c.itemId,-1)};
+    });
+    const cartTotal = cartItems.reduce((n,c)=>n+c.lineTotal,0);
+
+    const selectedItemRaw = s.menuItems.find(m=>m.id===s.selectedItemId) || s.menuItems[0];
+    const selectedItem = {...selectedItemRaw, vegDotStyle:vegDot(selectedItemRaw.veg)};
+    const selectedItemInCartQty = (s.cart.find(c=>c.itemId===selectedItem.id)||{}).qty||0;
+
+    const seq=['new','preparing','ready','served'];
+    const currentOrderRaw = s.orders.find(o=>o.id===s.currentOrderId) || null;
+    const hasCurrentOrder = !!currentOrderRaw;
+    const idx = currentOrderRaw ? seq.indexOf(currentOrderRaw.status) : -1;
+    const currentOrder = currentOrderRaw
+      ? {...currentOrderRaw, itemsSummary:currentOrderRaw.items.map(i=>i.qty+'x '+i.name).join(', ')}
+      : {table:12,itemsSummary:'',status:'new',total:0,paid:false};
+    const canPay = idx>=2;
+
+    const enrichOrder=(o)=>({...o,
+      itemsSummary:o.items.map(i=>i.qty+'x '+i.name).join(', '),
+      statusLabel: o.status==='new'?L.new:o.status==='preparing'?L.preparing:o.status==='ready'?L.ready:L.served,
+      advanceHandler: o.status!=='served' ? ()=>this.advanceOrder(o.id) : null
+    });
+    const newOrders=s.orders.filter(o=>o.status==='new').map(enrichOrder);
+    const preparingOrders=s.orders.filter(o=>o.status==='preparing').map(enrichOrder);
+    const readyOrders=s.orders.filter(o=>o.status==='ready').map(enrichOrder);
+    const servedOrders=s.orders.filter(o=>o.status==='served').map(enrichOrder);
+
+    const tableStatusColor={empty:'#efece2',seated:'#f1d9b5',billRequested:'#e8c8c0',cleaning:'#d7d2c2'};
+    const tableStatusLabel={empty:'Empty',seated:'Seated',billRequested:'Bill requested',cleaning:'Needs cleaning'};
+    const tablesEnriched = s.tables.map(t=>({...t,
+      label:tableStatusLabel[t.status],
+      boxStyle:{border:'2px solid '+INK,borderRadius:'10px',padding:'16px',textAlign:'center',cursor:'pointer',background:tableStatusColor[t.status]},
+      cycleHandler:()=>this.cycleTableStatus(t.id)
+    }));
+
+    const menuEnrichedFull = s.menuItems.map(m=>({...m,
+      vegDotStyle:vegDot(m.veg),
+      toggleHandler:()=>this.toggleAvailability(m.id),
+      switchStyle:{width:'44px',height:'24px',borderRadius:'999px',border:'2px solid '+INK,background:m.available?ACCENT:'transparent',position:'relative',cursor:'pointer',flexShrink:'0'},
+      knobStyle:{width:'16px',height:'16px',borderRadius:'50%',background:m.available?'#fff':INK,position:'absolute',top:'2px',left:m.available?'22px':'2px'}
+    }));
+
+    const ownerNavBase=[
+      {key:'briefing',label:L.briefing},{key:'orders',label:L.orders},{key:'tables',label:L.tables},
+      {key:'inventory',label:L.inventory},{key:'staff',label:L.staff},{key:'customers',label:L.customers},
+      {key:'sales',label:L.sales},{key:'ask',label:L.ask},{key:'agents',label:L.agents},{key:'compliance',label:L.compliance},{key:'settings',label:L.settings}
+    ];
+    const ownerNav = ownerNavBase.map(n=>{
+      const active=s.ownScreen===n.key;
+      return {...n,
+        onClick:()=>this.goOwner(n.key),
+        itemStyle:{padding:'10px 14px',borderRadius:'8px',cursor:'pointer',fontWeight:active?'700':'500',background:active?INK:'transparent',color:active?PAPER:INK,fontSize:'14px',marginBottom:'2px'}
+      };
+    });
+
+    const inventoryEnriched = s.inventory.map(it=>{
+      const pct=Math.min(100,Math.round(it.stock/it.max*100));
+      return {...it,
+        barOuter:{width:'100%',height:'10px',background:'#e6e2d4',borderRadius:'999px',overflow:'hidden',border:'1px solid '+INK},
+        barFill:{width:pct+'%',height:'100%',background:it.stockout?ACCENT:(it.low?'#c98a2e':INK)},
+        incHandler:()=>this.adjustStock(it.id,1),
+        decHandler:()=>this.adjustStock(it.id,-1)
+      };
+    });
+
+    const complianceEnriched = s.complianceChecklist.map(c=>({...c,toggleHandler:()=>this.toggleCompliance(c.id)}));
+
+    const askLogEnriched = s.askLog.map((qa,i)=>({
+      ...qa,
+      hasProposal: !!qa.proposal,
+      proposalPending: !!qa.proposal && qa.proposal.status==='pending',
+      proposalApproved: !!qa.proposal && qa.proposal.status==='approved',
+      proposalRejected: !!qa.proposal && qa.proposal.status==='rejected',
+      approveHandler:()=>this.approveAskProposal(i),
+      rejectHandler:()=>this.rejectAskProposal(i)
+    }));
+    const statusLabelMap={approved:'Approved',rejected:'Rejected','auto-executed':'Auto-executed'};
+    const agentStatusStyle=(st)=>({fontSize:'10px',fontWeight:'700',textTransform:'uppercase',letterSpacing:'.04em',padding:'3px 8px',borderRadius:'999px',border:'2px solid '+INK,background:st==='approved'?'#e9f2ea':st==='rejected'?'#efece2':'#fbeae7',color:st==='approved'?'#2f7d3a':st==='rejected'?'#726e66':'#8a2818'});
+    const agentActionsEnriched = s.agentActions.map(a=>({...a,statusLabel:statusLabelMap[a.status]||a.status,statusStyle:agentStatusStyle(a.status)}));
+
+    const orderFilters=['all','new','preparing','ready','served'];
+    const ownerOrderFilterBtns = orderFilters.map(f=>({key:f,label:f==='all'?L.all:(f==='new'?L.new:f==='preparing'?L.preparing:f==='ready'?L.ready:L.served),
+      onClick:()=>this.setOrderFilter(f)}));
+    const ownerOrders = s.orders.filter(o=>s.orderFilter==='all'||o.status===s.orderFilter).map(enrichOrder);
+
+    const peakHours=[{hour:'12pm',pct:40},{hour:'1pm',pct:65},{hour:'2pm',pct:35},{hour:'7pm',pct:80},{hour:'8pm',pct:100},{hour:'9pm',pct:70}]
+      .map(h=>({...h,barStyle:{width:'28px',height:(h.pct*1.2)+'px',background:INK}}));
+
+    const forecastBars=[{hour:'12',forecast:30,actual:28},{hour:'1',forecast:50,actual:55},{hour:'7',forecast:70,actual:0},{hour:'8',forecast:95,actual:0}]
+      .map(f=>({...f,fStyle:{width:'20px',height:(f.forecast*0.9)+'px',background:'#cbc6b8'},aStyle:{width:'20px',height:(f.actual*0.9)+'px',background:INK}}));
+
+    return {
+      isCustomer:s.surface==='customer', isKitchen:s.surface==='kitchen', isOwner:s.surface==='owner',
+      custTabStyle:tabStyle(s.surface==='customer'), kitTabStyle:tabStyle(s.surface==='kitchen'), ownTabStyle:tabStyle(s.surface==='owner'),
+      setSurfaceCustomer:()=>this.setSurface('customer'), setSurfaceKitchen:()=>this.setSurface('kitchen'), setSurfaceOwner:()=>this.setSurface('owner'),
+      langEnStyle:langBtnStyle(s.lang==='en'), langHiStyle:langBtnStyle(s.lang==='hi'),
+      setLangEn:()=>this.setLang('en'), setLangHi:()=>this.setLang('hi'),
+      labels:L,
+
+      isCustMenu:s.custScreen==='menu', isCustItem:s.custScreen==='item', isCustCart:s.custScreen==='cart',
+      isCustOrderStatus:s.custScreen==='orderStatus', isCustQueue:s.custScreen==='queue', isCustBill:s.custScreen==='bill',
+      goMenu:()=>this.goCustomer('menu'), goCart:()=>this.goCustomer('cart'), goQueue:()=>this.goCustomer('queue'), goBillScreen:()=>this.goCustomer('bill'),
+      filteredMenu, cartCount, cartItems, cartTotal, cartEmpty:cartItems.length===0,
+      selectedItem, selectedItemInCartQty, addSelectedToCart:()=>this.addToCart(selectedItem.id),
+      vegAllChipStyle:vegChipStyle(s.vegFilter==='all'), vegVegChipStyle:vegChipStyle(s.vegFilter==='veg'), vegNonvegChipStyle:vegChipStyle(s.vegFilter==='nonveg'),
+      setVegAll:()=>this.setVegFilter('all'), setVegVeg:()=>this.setVegFilter('veg'), setVegNonveg:()=>this.setVegFilter('nonveg'),
+      searchQuery:s.searchQuery, onSearchInput:(e)=>this.setSearchQuery(e.target.value),
+      confirmOrderHandler:this.confirmOrder,
+      currentOrder, hasCurrentOrder, noCurrentOrder:!hasCurrentOrder,
+      stepNewStyle:dot(true), stepPrepStyle:dot(idx>=1), stepReadyStyle:dot(idx>=2), stepServedStyle:dot(idx>=3),
+      openOtp:this.openOtp, closeOtp:this.closeOtp, otpOpen:s.otpOpen,
+      billVisible: hasCurrentOrder && canPay, notBillVisible: !(hasCurrentOrder && canPay),
+      currentOrderPaid: hasCurrentOrder ? currentOrderRaw.paid : false,
+      notCurrentOrderPaid: hasCurrentOrder ? !currentOrderRaw.paid : true,
+      markPaidHandler:this.markPaid,
+      queueEntries: s.queueEntries.map((q,i)=>({...q,position:i+1})), yourQueuePosition:s.queueEntries.length+1, yourQueueWait:22,
+      simulateQueueReady:this.simulateQueueReady,
+
+      kitQueueTabStyle:tabStyle(s.kitScreen==='queue'), kitTablesTabStyle:tabStyle(s.kitScreen==='tables'), kitAvailTabStyle:tabStyle(s.kitScreen==='availability'),
+      goKitQueue:()=>this.goKitchen('queue'), goKitTables:()=>this.goKitchen('tables'), goKitAvail:()=>this.goKitchen('availability'),
+      isKitQueue:s.kitScreen==='queue', isKitTables:s.kitScreen==='tables', isKitAvail:s.kitScreen==='availability',
+      newOrders, preparingOrders, readyOrders, servedOrders,
+      tablesEnriched, availabilityGrid:menuEnrichedFull,
+
+      ownerNav,
+      isOwnBriefing:s.ownScreen==='briefing', isOwnOrders:s.ownScreen==='orders', isOwnTables:s.ownScreen==='tables',
+      isOwnInventory:s.ownScreen==='inventory', isOwnStaff:s.ownScreen==='staff', isOwnCustomers:s.ownScreen==='customers',
+      isOwnSales:s.ownScreen==='sales', isOwnAsk:s.ownScreen==='ask', isOwnAgents:s.ownScreen==='agents', isOwnCompliance:s.ownScreen==='compliance', isOwnSettings:s.ownScreen==='settings',
+      goInventoryFromBriefing:()=>this.goOwner('inventory'), goAskFromBriefing:()=>this.goOwner('ask'),
+      prepProposalText:s.prepProposal.text, prepProposalBasis:s.prepProposal.basis,
+      prepPending:s.prepProposal.status==='pending', prepApproved:s.prepProposal.status==='approved', prepRejected:s.prepProposal.status==='rejected',
+      approvePrepHandler:this.approvePrep, rejectPrepHandler:this.rejectPrep,
+      forecastBars,
+      ownerOrderFilterBtns, ownerOrders,
+      tablesEnrichedOwner:tablesEnriched,
+      inventoryEnriched,
+      staffList:s.staff,
+      customersList:s.customers,
+      peakHours,
+      askLog:s.askLog, askLogEnriched, askInput:s.askInput, onAskInputChange:(e)=>this.setAskInput(e.target.value),
+      submitAskHandler:this.submitAsk, askPresetTuesday:()=>this.askPreset('tuesday'), askPresetPrep:()=>this.askPreset('prep'), askPresetStockout:this.askPresetStockout,
+      complianceEnriched,
+      agentActionsEnriched, agentActionsEmpty: s.agentActions.length===0,
+      settingsMenu:menuEnrichedFull, addMenuItemHandler:this.addMenuItemStub,
+      floatingAskHandler:()=>this.goOwner('ask')
+    };
+  }
+}
+</script>
+</body>
+</html>
