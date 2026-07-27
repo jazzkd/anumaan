@@ -93,7 +93,14 @@ check("unknown menu item is rejected with 400", unknownItem.status === 400);
 // ── A real order, priced and costed by the server ────────────────────────────
 console.log("\nOrder lifecycle");
 
-const paneerBefore = inventory.body?.find((i) => i.id === 1)?.stock;
+// Establish a known baseline rather than reading whatever the last run left.
+// Each pass consumes 0.45 kg, so after a few runs paneer sits at 0 and a
+// correct decrement becomes indistinguishable from a broken one.
+await call("/api/inventory/1", {
+  method: "PATCH",
+  body: JSON.stringify({ stock: 5 }),
+});
+const paneerBefore = 5;
 
 // 2× Paneer Butter Masala (id 5, ₹280) = ₹560, and 300 g of paneer.
 const placed = await call("/api/orders", {
