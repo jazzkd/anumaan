@@ -12,7 +12,26 @@ zero radius, no gradients — so the deck and the thing it describes read as one
 piece of work. The forecast chart is CSS rectangles rather than a chart library,
 so nothing fetches at presentation time except the typeface.
 
-### Exporting to PDF
+
+## Anumaan.pptx — the file to upload
+
+A genuine PowerPoint file, not a PDF renamed. Every element is a real shape or
+text box, so it opens and edits in PowerPoint, Keynote or Google Slides.
+
+Regenerate after any change with:
+
+
+
+Headings are set in Arial Black rather than the product typeface. Archivo is
+not installed on this machine and almost certainly not on a judge's either, and
+a .pptx naming a missing font substitutes something arbitrary at open time.
+Arial Black is heavy and geometric, present on Windows, macOS and Google
+Slides, and the identity here comes from the flat shapes and single accent
+more than the letterforms.
+
+ remains the better thing to *present* from — it has hover states
+and exact type. Use the .pptx for the upload.
+### Exporting to PDF (from deck.html)
 
 Most submission portals want a PDF or PPT. To produce one:
 
