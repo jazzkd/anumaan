@@ -182,6 +182,94 @@ const badBody = await call("/api/menu/9", {
 });
 check("a non-boolean availability is rejected with 400", badBody.status === 400);
 
+// Dal Makhani ships 86'd in the seed and the tests above rely on that. Put it
+// back however this run went, so a re-run starts from the same place.
+await call("/api/menu/4", {
+  method: "PATCH",
+  body: JSON.stringify({ available: false }),
+});
+
+// ── Phase 2: the three surfaces are reachable and on-brand ───────────────────
+console.log("\nSurfaces");
+
+async function page(path) {
+  const res = await fetch(`${base}${path}`);
+  return { status: res.status, html: await res.text() };
+}
+
+for (const [path, marker] of [
+  ["/menu", "Anumaan"],
+  ["/cart", "Anumaan"],
+  ["/queue", "Anumaan"],
+  ["/kitchen", "Kitchen Display"],
+  ["/briefing", "Owner Dashboard"],
+  ["/orders", "Owner Dashboard"],
+  ["/tables", "Owner Dashboard"],
+  ["/inventory", "Owner Dashboard"],
+]) {
+  const p = await page(path);
+  check(`${path} renders`, p.status === 200 && p.html.includes(marker), `got ${p.status}`);
+}
+
+const summary = await call("/api/summary");
+check("GET /api/summary returns 200", summary.status === 200);
+check(
+  "yesterday's revenue is the seeded ₹18,400 (GND-001's source figure)",
+  Number(summary.body?.yesterday?.revenue) === 18400,
+  `got ${summary.body?.yesterday?.revenue}`
+);
+check(
+  "synthetic history is flagged as synthetic",
+  summary.body?.yesterday?.isSynthetic === true
+);
+check(
+  "butter is reported as a stockout risk",
+  summary.body?.stockoutRisks?.some((r) => r.name === "Butter"),
+  JSON.stringify(summary.body?.stockoutRisks)
+);
+
+// ── E2E-001, data path ───────────────────────────────────────────────────────
+// The customer screen reflecting "ready" without a refresh is a browser
+// behaviour and is verified by hand. What is asserted here is everything
+// underneath it: the order the diner placed reaches "ready" through the same
+// endpoint the kitchen board calls, and reads back that way.
+console.log("\nE2E-001 (data path)");
+
+// Make no assumption about what an earlier run left behind — a smoke test that
+// only passes on a pristine database is a smoke test that stops being run.
+await call("/api/menu/9", {
+  method: "PATCH",
+  body: JSON.stringify({ available: true }),
+});
+
+const e2e = await call("/api/orders", {
+  method: "POST",
+  body: JSON.stringify({ tableId: 3, items: [{ menuItemId: 9, qty: 2 }] }),
+});
+check("diner places an order at table 3", e2e.status === 201, `got ${e2e.status}`);
+
+const e2eId = e2e.body?.id;
+for (const step of ["preparing", "ready"]) {
+  const r = await call(`/api/orders/${e2eId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status: step }),
+  });
+  check(`kitchen advances to ${step}`, r.status === 200, `got ${r.status}`);
+}
+
+const asCustomerSees = await call(`/api/orders/${e2eId}`);
+check(
+  "the customer's order feed reports ready",
+  asCustomerSees.body?.status === "ready",
+  `got ${asCustomerSees.body?.status}`
+);
+
+const seated = await call("/api/tables");
+check(
+  "table 3 was seated by the order",
+  seated.body?.find((t) => t.id === 3)?.status === "seated"
+);
+
 // ── Report ───────────────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exitCode = failed === 0 ? 0 : 1;
