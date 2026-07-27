@@ -1,8 +1,10 @@
 "use client";
 
 import type { Briefing } from "@/app/api/briefing/route";
+import { ProposalCard } from "@/components/owner/ProposalCard";
 import { ErrorNote, Spinner, inr } from "@/components/ui";
 import { useT } from "@/lib/i18n";
+import type { AgentAction } from "@/lib/types";
 import { useLiveData } from "@/lib/useLiveData";
 import Link from "next/link";
 import { useState } from "react";
@@ -15,6 +17,12 @@ export default function BriefingPage() {
     "/api/briefing",
     { refreshInterval: 0 }
   );
+  // Polled: the watcher can raise a proposal at any moment, and the owner
+  // should not have to reload to find out.
+  const { data: actions, mutate: mutateActions } =
+    useLiveData<AgentAction[]>("/api/agents/actions");
+  const pending = (actions ?? []).filter((a) => a.status === "proposed");
+
   const { t } = useT();
   const [rewriting, setRewriting] = useState(false);
 
@@ -72,6 +80,30 @@ export default function BriefingPage() {
               </button>
             </p>
           </section>
+
+          {/* Anything an agent raised on its own, at the top where it will be
+              seen. A warning the owner has to go looking for is not a warning. */}
+          {pending.length > 0 ? (
+            <section className="mb-5">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="tag tag-accent">
+                  {pending.length} awaiting your approval
+                </span>
+                <span className="text-[12px] text-muted">
+                  raised automatically — nothing has happened yet
+                </span>
+              </div>
+              <div className="flex flex-col gap-3">
+                {pending.map((action) => (
+                  <ProposalCard
+                    key={action.id}
+                    action={action}
+                    onDecided={() => mutateActions()}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section className="grid gap-4 md:grid-cols-[1.6fr_1fr_1fr] border-y-2 border-[var(--color-divider)] py-4">
             <div className="md:border-r-2 border-[var(--color-divider)] md:pr-4">

@@ -12,15 +12,33 @@ export const dynamic = "force-dynamic";
  * runs it regardless of the hour. The agent's behaviour is identical either
  * way; only the clock check is bypassed.
  */
-export async function POST(request: Request) {
-  const guard = await requireRole("owner", "staff");
-  if (!guard.ok) return guard.response;
+async function run(request: Request) {
+  const secret = process.env.CRON_SECRET;
+  const fromScheduler =
+    Boolean(secret) && request.headers.get("authorization") === `Bearer ${secret}`;
 
-  const force = new URL(request.url).searchParams.get("force") === "1";
+  if (!fromScheduler) {
+    const guard = await requireRole("owner", "staff");
+    if (!guard.ok) return guard.response;
+  }
+
+  // The scheduler fires at the cutoff, so it never needs to force past the
+  // clock check; a human demonstrating at noon does.
+  const force =
+    !fromScheduler && new URL(request.url).searchParams.get("force") === "1";
 
   try {
     return ok(await runComplianceCheck(new Date(), force));
   } catch (err) {
     return serverError(err instanceof Error ? err.message : "Check failed");
   }
+}
+
+export async function POST(request: Request) {
+  return run(request);
+}
+
+/** Vercel Cron issues GET. */
+export async function GET(request: Request) {
+  return run(request);
 }

@@ -495,6 +495,76 @@ if (prep.body?.action?.id) {
   );
 }
 
+// ── The agent that starts the conversation ───────────────────────────────────
+console.log("\nInventory Watch (event-driven)");
+
+// Clear today's watch proposals so this section tests the trigger rather than
+// whatever an earlier run left behind.
+await call("/api/demo/reset", { method: "POST" });
+
+const watchBefore = await call("/api/agents/actions");
+const watchCountBefore = (watchBefore.body ?? []).filter(
+  (a) => a.agent === "Inventory Watch Agent"
+).length;
+
+// Paneer ships at 2.0kg against a forecast use of ~2.3kg, so the very first
+// order past that line should wake the watcher.
+const trigger = await call("/api/orders", {
+  method: "POST",
+  body: JSON.stringify({ tableId: 3, items: [{ menuItemId: 5, qty: 2 }] }),
+});
+check("the diner's order succeeds", trigger.status === 201);
+
+// `after()` runs once the response is sent, so give it a moment to land.
+await new Promise((r) => setTimeout(r, 3500));
+
+const afterOrder = await call("/api/agents/actions");
+const raised = (afterOrder.body ?? []).filter(
+  (a) => a.agent === "Inventory Watch Agent" && a.status === "proposed"
+);
+check(
+  "placing an order wakes the watcher — no human asked it to",
+  raised.length > watchCountBefore || raised.length > 0,
+  `${raised.length} open watch proposals`
+);
+check(
+  "the proposal cites the forecast it was derived from",
+  /forecast use/i.test(raised[0]?.basis ?? ""),
+  raised[0]?.basis?.slice(0, 90)
+);
+
+// Debounce: a busy service must not bury the owner in identical warnings.
+await call("/api/orders", {
+  method: "POST",
+  body: JSON.stringify({ tableId: 3, items: [{ menuItemId: 5, qty: 1 }] }),
+});
+await new Promise((r) => setTimeout(r, 3500));
+const afterSecond = await call("/api/agents/actions");
+check(
+  "a second order does not raise a duplicate warning",
+  (afterSecond.body ?? []).filter((a) => a.agent === "Inventory Watch Agent")
+    .length === raised.length,
+  "one warning per ingredient per day"
+);
+
+// The automation must not have automated the action.
+if (raised[0]) {
+  const stillOn = await call("/api/menu");
+  check(
+    "nothing was executed — automating the trigger did not automate the act",
+    stillOn.body?.find((m) => m.id === raised[0].tool_args.menu_item_id)
+      ?.available === true
+  );
+}
+
+const watchEndpoint = await call("/api/agents/watch", { method: "POST" });
+check(
+  "the watch endpoint reports honestly rather than re-raising",
+  watchEndpoint.status === 200 &&
+    /already raised today|Nothing at risk|Raised/i.test(watchEndpoint.body?.message ?? ""),
+  watchEndpoint.body?.message
+);
+
 // ── Restore the seeded baseline ──────────────────────────────────────────────
 // Every pass places real orders, which consume real stock. Left alone, butter
 // drifts from its seeded 1.5 kg toward zero and the demo's stockout story stops

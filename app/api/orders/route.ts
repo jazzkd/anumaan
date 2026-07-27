@@ -1,8 +1,10 @@
+import { checkStockAndPropose } from "@/lib/agents/watcher";
 import { RESTAURANT_ID } from "@/lib/constants";
 import { badRequest, fail, fromSupabase, ok, readJson } from "@/lib/http";
 import { computeInventoryDecrements, gramsToStockUnits } from "@/lib/recipes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { MenuItem, Order } from "@/lib/types";
+import { after } from "next/server";
 
 export const dynamic = "force-dynamic";
 
@@ -130,6 +132,18 @@ export async function POST(request: Request) {
   }
 
   await decrementInventory(db, lines);
+
+  // Stock has just moved, so this is the moment to notice it has moved too
+  // far. `after` runs once the response is on its way to the diner — the
+  // watcher must never sit between someone and their dinner.
+  after(async () => {
+    try {
+      await checkStockAndPropose();
+    } catch {
+      // A missed warning is a worse day for the owner; a failed order is a
+      // worse day for the diner. Never let the first cause the second.
+    }
+  });
 
   // Seat the table if the order came from an empty one — the floor board
   // should never show an empty table that is actively eating.
