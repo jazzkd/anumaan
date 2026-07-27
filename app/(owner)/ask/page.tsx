@@ -10,6 +10,7 @@ import { useState } from "react";
 
 type Entry = {
   q: string;
+  provider?: string;
   answer?: string;
   meta?: string;
   actions?: AgentAction[];
@@ -67,6 +68,7 @@ export default function AskPage() {
           q: question,
           answer: res.reply,
           actions: res.actions,
+          provider: res.provider,
           meta:
             res.actions.length === 0
               ? `No action proposed · logged · ${res.provider}`
@@ -130,7 +132,7 @@ export default function AskPage() {
             ) : null}
 
             {(entry.actions ?? []).map((action) => (
-              <ProposalCard key={action.id} action={action} />
+              <ProposalCard key={action.id} action={action} provider={entry.provider} />
             ))}
 
             {entry.error ? (

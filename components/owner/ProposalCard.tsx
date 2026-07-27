@@ -16,9 +16,12 @@ import { useState } from "react";
  */
 export function ProposalCard({
   action,
+  provider,
   onDecided,
 }: {
   action: AgentAction;
+  /** Which model drafted it, when the caller knows. */
+  provider?: string;
   onDecided?: (updated: AgentAction) => void;
 }) {
   const { t } = useT();
@@ -50,6 +53,12 @@ export function ProposalCard({
     <div className="card elev-sm border-l-4 border-l-accent max-w-[620px]">
       <span className="card-kicker">
         {t("agentProposal")} · {current.agent}
+        {/* Named on purpose. "Drafted by groq" is checkable evidence that a
+            model reasoned about this, where an unattributed card could just as
+            easily be a hard-coded string. */}
+        {provider ? (
+          <span className="text-muted"> · drafted by {provider}</span>
+        ) : null}
       </span>
 
       <span className="card-title">{current.proposal}</span>

@@ -94,10 +94,6 @@ export async function complete(
   return { text: cannedFallback, provider: "canned", fellBack: true };
 }
 
-// Pinned rather than `gemini-flash-latest`: an alias can rotate underneath a
-// demo, and "it behaved differently this morning" is not a debuggable state at
-// hour 30. Note gemini-2.5-flash now 404s for new API keys — Google retired it
-// for new users, which is exactly the kind of drift the pin protects against.
 export type ToolCall = { name: string; args: Record<string, unknown> };
 
 export type ToolResult = {
@@ -113,9 +109,18 @@ export type ToolResult = {
  * nothing, which is a legitimate and often correct outcome (TRJ-003 requires
  * exactly that when asked to contact a supplier).
  *
- * Groq only: it is OpenAI-compatible, it is the primary provider, and its
- * quota can absorb the 5-trial eval runs. Gemini's 20/day makes it useless for
- * trajectory evaluation, so there is no second implementation to keep correct.
+ * Groq first, then Gemini, then the deterministic path.
+ *
+ * This was Groq-only until a scenario sweep exhausted Groq's 100,000
+ * tokens-per-day allowance, at which point every agent request fell through to
+ * the offline parser. That path answers correctly, but it means a demo shows no
+ * model reasoning at all — and the model reasoning is the thing being
+ * demonstrated. One provider is not a failover strategy when both the daily and
+ * per-minute ceilings are this low.
+ *
+ * Gemini's free tier is small in requests but that suits a demo burst, and its
+ * limits are counted separately from Groq's — so the two run out at different
+ * times, which is the entire point of having both.
  */
 export async function callWithTools(args: {
   system: string;
@@ -123,10 +128,100 @@ export async function callWithTools(args: {
   tools: unknown[];
   temperature?: number;
 }): Promise<ToolResult> {
-  if (!process.env.GROQ_API_KEY) {
-    return { toolCalls: [], text: "", provider: "canned", offline: true };
+  if (process.env.GROQ_API_KEY) {
+    const groq = await groqTools(args);
+    if (groq) return groq;
   }
 
+  if (process.env.GEMINI_API_KEY) {
+    const gemini = await geminiTools(args);
+    if (gemini) return gemini;
+  }
+
+  return { toolCalls: [], text: "", provider: "canned", offline: true };
+}
+
+/** Gemini's function-calling shape differs from OpenAI's; translate rather
+ *  than maintain two tool registries. */
+async function geminiTools(args: {
+  system: string;
+  user: string;
+  tools: unknown[];
+  temperature?: number;
+}): Promise<ToolResult | null> {
+  const functionDeclarations = (args.tools as {
+    function: { name: string; description: string; parameters: unknown };
+  }[]).map((t) => ({
+    name: t.function.name,
+    description: t.function.description,
+    parameters: t.function.parameters,
+  }));
+
+  for (const model of GEMINI_TOOL_MODELS) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": process.env.GEMINI_API_KEY!,
+          },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: args.system }] },
+            contents: [{ role: "user", parts: [{ text: args.user }] }],
+            tools: [{ functionDeclarations }],
+            // Generous, because Gemini 3.x spends this budget thinking before
+            // it emits the call.
+            generationConfig: {
+              temperature: args.temperature ?? 0.1,
+              maxOutputTokens: 3000,
+            },
+          }),
+          signal: AbortSignal.timeout(20_000),
+        }
+      );
+
+      if (!res.ok) {
+        console.warn(`[llm] gemini tools ${model}: HTTP ${res.status}`);
+        continue;
+      }
+
+      const body = await res.json();
+      const parts = body?.candidates?.[0]?.content?.parts ?? [];
+
+      const toolCalls: ToolCall[] = parts
+        .filter((p: { functionCall?: unknown }) => p.functionCall)
+        .map((p: { functionCall: { name: string; args?: Record<string, unknown> } }) => ({
+          name: p.functionCall.name,
+          args: p.functionCall.args ?? {},
+        }));
+
+      const text = parts
+        .filter((p: { text?: string }) => typeof p.text === "string")
+        .map((p: { text: string }) => p.text)
+        .join(" ")
+        .trim();
+
+      return { toolCalls, text, provider: "gemini", offline: false };
+    } catch (err) {
+      console.warn(
+        `[llm] gemini tools ${model} failed:`,
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
+
+  return null;
+}
+
+/** Returns null when Groq cannot answer, so the caller can try Gemini. */
+async function groqTools(args: {
+  system: string;
+  user: string;
+  tools: unknown[];
+  temperature?: number;
+}): Promise<ToolResult | null> {
   try {
     let res!: Response;
 
@@ -197,11 +292,15 @@ export async function callWithTools(args: {
     // what was asked — so the agent looks like it works while ignoring the
     // question. That is far worse than an error, and it is exactly what this
     // empty catch block hid.
+    // Never silent. A swallowed failure here used to drop every request onto
+    // the deterministic path, which answered with the at-risk dish no matter
+    // what was asked — the agent looked like it worked while ignoring the
+    // question. Returning null hands the turn to Gemini instead of giving up.
     console.warn(
-      "[llm] tool-calling failed, falling back to the deterministic path:",
+      "[llm] groq tools failed, trying gemini:",
       err instanceof Error ? err.message : err
     );
-    return { toolCalls: [], text: "", provider: "canned", offline: true };
+    return null;
   }
 }
 
@@ -210,6 +309,14 @@ export async function callWithTools(args: {
 // hour 30. Note gemini-2.5-flash now 404s for new API keys — Google retired it
 // for new users, which is exactly the kind of drift the pin protects against.
 const GEMINI_MODEL = "gemini-3.6-flash";
+
+// Tried in order for tool calling. Each carries its own quota, so one running
+// dry does not end the turn.
+const GEMINI_TOOL_MODELS = [
+  "gemini-3.6-flash",
+  "gemini-flash-latest",
+  "gemini-3.1-flash-lite",
+];
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 async function callGemini({
