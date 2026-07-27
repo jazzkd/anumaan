@@ -92,6 +92,7 @@ true is enforced in code.
 | **Anumaan Agent** | Proposes only | Every tool call becomes an `agent_actions` row with status `proposed` *before* approval exists. Nothing executes until a human says yes. |
 | **Prep & Forecast Agent** | Proposes only | Reads forecast → reads inventory → drafts checklist. Writes nothing to the Kitchen Board until approved (TRJ-002). |
 | **Compliance Nudge Agent** | Acts autonomously | It holds **no tools**. It can only notify. Autonomy is safe because there is nothing it could do, not because a rule forbids it. |
+| **Inventory Watch Agent** | Fires unprompted, proposes only | Wakes on every order as stock falls. When the forecast says an ingredient will not last the day, it raises a proposal nobody asked for — deterministic, no LLM, so it can be neither slow nor out of quota on the hot path of someone's dinner. |
 
 **The approval gate lives in the route handler** (`app/api/agents/[id]/decide`),
 not the UI. A client that skips the interface, forges a request, or replays an
@@ -99,6 +100,26 @@ old one still cannot execute anything unapproved. Re-deciding a resolved action
 returns 409, so a double-tap cannot run a side effect twice. Execution records
 what *actually* changed — "Paneer Tikka is now sold out on the customer menu" —
 not what was intended.
+
+### How agents are triggered
+
+| Trigger | Agent | Mechanism |
+|---|---|---|
+| **Event** — stock crosses its line | Inventory Watch | `after()` on `POST /api/orders`, so the work runs once the response is already on its way to the diner. Debounced to one warning per ingredient per day. |
+| **Schedule** — 21:00 cutoff | Compliance Nudge | Vercel Cron (`vercel.json`), authenticated with `CRON_SECRET`. |
+| **Schedule** — morning sweep | Inventory Watch | Cron at 10:00, a backstop for a day that has seen no orders yet. |
+| **Human** — a question or a request | Anumaan Agent | `POST /api/agents/propose` from Ask Anumaan. |
+| **Human** — draft today's prep | Prep & Forecast | Button on `/agents`. |
+
+Vercel's Hobby plan caps cron at **once per day with ±59 minutes of slack**.
+That is fine for a nightly cutoff and useless for anything reactive, which is
+why stock is watched on the write that changes it rather than by a schedule
+asking "is anything wrong yet".
+
+**Automating when an agent thinks never automates what it does.** Every trigger
+above writes a `proposed` row and stops. No trigger has a route to
+`executeTool`; the smoke suite asserts the customer menu is untouched while a
+watcher proposal sits pending.
 
 **The Agent Activity Log** (`/agents`) shows every action: approved, rejected,
 auto-executed, and refused. Rejections stay in the log on purpose. A trail that
