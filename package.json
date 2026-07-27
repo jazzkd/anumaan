@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "smoke": "node scripts/smoke.mjs",
-    "evals": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON evals/run.mjs"
+    "evals": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON evals/run.mjs",
+    "deck": "node -e \"const{execSync}=require('child_process');const p=require('path').resolve('submission/deck.html');execSync(process.platform==='win32'?`start \\\"\\\" \\\"${p}\\\"`:`open \\\"${p}\\\"`,{shell:true})\""
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
