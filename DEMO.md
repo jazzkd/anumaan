@@ -34,10 +34,14 @@ out loud if it happens; it is a design feature, not a save.
 **Tab A.** Scanning the QR on table 3 opens this — no login, that's deliberate.
 
 - Point out the veg/non-veg marks (the real FSSAI symbol).
-- Point out **Dal Makhani greyed out, "Sold out"** — that's live shared state.
-- Add **2 × Garlic Naan** → Cart → **Confirm Order**.
+- Point out **Dal Makhani desaturated, "Sold out"** — that's live shared state.
+- Add **2 × Garlic Naan** → cart bar at the bottom → **Confirm Order**.
 
 Lands on the order status screen. Leave it visible.
+
+*Say nothing about it now, but that order has just woken the Inventory Watch
+agent. You will find its proposal waiting at 2:00, and the fact that you never
+asked for it is the point.*
 
 ---
 
@@ -56,43 +60,56 @@ Lands on the order status screen. Leave it visible.
 
 ---
 
-## 2:00–3:00 · The owner's briefing, grounded
+## 2:00–3:00 · The owner's briefing — and the agent has already spoken
 
-**Tab C.**
+**Tab C.** Refresh it.
 
-> "Yesterday's revenue: ₹18,400. That number is computed in SQL. The model is
-> handed it and told to describe it — it never does arithmetic."
+There is a proposal sitting at the top that **nobody asked for**. Let that land
+before explaining it.
 
-Point at the forecast table and read one basis line aloud:
+> "I haven't touched this screen. When that order went in a minute ago, stock
+> moved — and the system checked whether today's forecast still fits in what's
+> on the shelf. It doesn't. So it raised this by itself."
 
-> "Garlic Naan, 30 expected — *Monday average of 30 over 4 weeks × trend 0.98*.
-> Every AI-adjacent number in this product prints the arithmetic that produced
-> it. And the history is synthetic, which the briefing says out loud."
+Read the basis aloud:
+
+> "*Paneer: 2kg in stock against forecast use of 2.3kg. Paneer Tikka depends on
+> paneer, and today's forecast was computed from the weekday average times a
+> clamped trend factor.*"
+
+Then the figures underneath:
+
+> "Yesterday: ₹18,400 — computed in SQL. The model is handed that number and
+> told to describe it; it never does arithmetic. The history is synthetic, and
+> the briefing says so itself."
+
+Point at one forecast row: *"Garlic Naan, 30 — Monday average of 30 over 4 weeks
+× trend 0.98."*
+
+> "Every AI-adjacent number in this product prints the arithmetic that produced
+> it."
 
 ---
 
-## 3:00–4:30 · The agent proposes, you approve — **the moment**
+## 3:00–4:30 · You approve — **the moment**
 
-**Tab C → Ask Anumaan.** Click **"Handle the item that's about to run out."**
+Back to the proposal card.
 
-A proposal card appears. Read it out:
+> "Note what hasn't happened. Nothing. It noticed, it drafted, and it stopped."
 
-> "It's proposing to 86 Paneer Tikka. The basis: *Paneer is at risk with 2kg in
-> stock against forecast use of 2.3kg, and Paneer Tikka depends on it.* Note
-> what hasn't happened — nothing. It drafted this and stopped."
-
-**Switch to Tab A.** Paneer Tikka is still available. Come back.
+**Switch to Tab A.** Paneer Tikka is still on sale. Come back.
 
 Press **Approve.**
 
-- The card becomes "Approved" with **what actually changed**.
+- The card becomes "Approved" and states **what actually changed**.
 - **Switch to Tab A.** Paneer Tikka now reads **Sold out**.
 
-> "That's the whole product in fifteen seconds. It noticed, it proposed, it
-> showed its reasoning, it waited, and only then did it act."
+> "It noticed on its own, showed its reasoning, waited for me, and only then
+> acted. Automating *when* it thinks never automates *what* it does — there is
+> no code path from that watcher to a state change."
 
-**Now the one to invite them to try.** Click **"Order more paneer from our
-supplier."**
+**Now the one to invite them to try.** Tab C → **Ask Anumaan** → click
+**"Order more paneer from our supplier."**
 
 > "It refuses. Not because we filtered it — because no such tool exists. We
 > never built one that spends money or contacts anyone outside this building.
@@ -111,16 +128,22 @@ supplier."**
 
 > "Every action any agent has taken or proposed. Newest first."
 
-Point out three rows:
+Point out four rows:
 
-1. Your **approved** 86 — with the basis and what changed.
-2. The **rejected** discount attempt, if you ran one — *"we log refusals too. A
-   trail that only showed successes would be marketing."*
+1. Your **approved** 86 — raised by the Inventory Watch Agent, with its basis
+   and what actually changed.
+2. The **rejected** supplier request — *"we log refusals too. A trail that only
+   showed successes would be marketing."*
 3. The **Compliance Nudge Agent**, auto-executed, `notify-only — no tool held`.
+4. Note there is **only one** watch proposal, not one per order.
 
-> "This one acts without approval. It's allowed to because it holds no tools at
-> all — it can only notify. Autonomy is safe here because there's nothing it
-> could do, not because a rule says it mustn't."
+> "The compliance one acts without approval. It's allowed to because it holds
+> no tools at all — it can only notify. Autonomy is safe here because there's
+> nothing it could do, not because a rule says it mustn't."
+
+> "And the watcher warns once per ingredient per day. A busy service would
+> otherwise raise the same warning forty times, and an owner learns to ignore
+> that faster than they'd learn to trust it."
 
 ---
 
@@ -154,6 +177,18 @@ Three layers. The tool doesn't exist. Requests for capabilities we don't have
 are refused in code before the model runs. And the approval gate is in the route
 handler, so skipping the UI doesn't help — plus re-approving returns 409, so a
 replay can't fire the same side effect twice.
+
+**"If it triggers itself, what stops it acting on its own?"**
+The watcher writes a `proposed` row and returns. There is no code path from any
+trigger to the execution function — that lives only in the approval route. The
+smoke suite asserts the customer menu is untouched while a watcher proposal is
+pending, so if someone ever wired a trigger straight to execution, a test fails.
+
+**"Is it really predicting, or just reacting to a threshold?"**
+Predicting. A threshold would fire when paneer drops below 2kg. This fires when
+*today's forecast demand* exceeds what's left — weekday average × trend factor,
+run through the recipe map. Paneer is at 2kg and nothing has gone wrong yet; it
+raised the warning because 2kg won't survive the day it expects.
 
 **"Is this actually deployed?"**
 Everything you've seen is the deployed URL. `npm run smoke -- <url>` runs 69
