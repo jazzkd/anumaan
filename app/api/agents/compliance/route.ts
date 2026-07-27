@@ -1,6 +1,6 @@
 import { runComplianceCheck } from "@/lib/agents/compliance";
 import { requireRole } from "@/lib/auth";
-import { ok, serverError } from "@/lib/http";
+import { forbidden, ok, serverError } from "@/lib/http";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,16 @@ export async function POST(request: Request) {
   return run(request);
 }
 
-/** Vercel Cron issues GET. */
+/**
+ * Vercel Cron issues GET, so GET is the scheduler's method and nothing else's.
+ * Once a secret is configured it is required here — the fallback owner guard
+ * inside `run` is deliberately permissive while AUTH_ENABLED is off, which
+ * would otherwise leave this openly callable by anyone who guessed the path.
+ */
 export async function GET(request: Request) {
+  const secret = process.env.CRON_SECRET;
+  if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return forbidden("This endpoint is scheduler-only");
+  }
   return run(request);
 }
