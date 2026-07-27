@@ -44,6 +44,9 @@ next-env.d.ts
 .vercel
 .env*
 
+# Office lock files — created whenever the deck is open in PowerPoint.
+~$*
+
 # Re-allow the checked-in template. Must stay last: the Vercel CLI appends
 # `.env*` here on `vercel link`, which would otherwise re-ignore it.
 !.env.local.example
