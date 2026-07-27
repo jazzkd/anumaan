@@ -1,20 +1,19 @@
 import Link from "next/link";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 const SURFACES = [
   {
-    href: "/menu",
+    href: "/menu?table=3",
     kicker: "Customer",
     title: "Menu & Ordering",
-    body: "Scan-to-order PWA. No login to browse — live availability, cart, order status, queue, and bill.",
+    body: "Scan-to-order from your phone. No login to browse — live availability, cart, order status, queue, and bill.",
   },
   {
     href: "/kitchen",
     kicker: "Staff",
     title: "Kitchen Display",
-    body: "Order queue board, table status, and the 86-an-item availability grid. Built for a two-minute learning curve.",
+    body: "Order board with tap-to-advance, table status, and the availability grid. Built for a two-minute learning curve.",
   },
   {
     href: "/briefing",
@@ -24,27 +23,7 @@ const SURFACES = [
   },
 ];
 
-/** Proves the database connection end-to-end rather than asserting it —
- *  a seeded row count is the Phase 0 exit criterion made visible. */
-async function seedStatus(): Promise<{ ok: boolean; detail: string }> {
-  if (!isSupabaseConfigured()) {
-    return { ok: false, detail: "Supabase env vars not set yet" };
-  }
-  try {
-    const supabase = await createClient();
-    const { count, error } = await supabase
-      .from("menu_items")
-      .select("*", { count: "exact", head: true });
-    if (error) return { ok: false, detail: error.message };
-    return { ok: true, detail: `${count ?? 0} menu items seeded` };
-  } catch (err) {
-    return { ok: false, detail: err instanceof Error ? err.message : "unreachable" };
-  }
-}
-
-export default async function Home() {
-  const seed = await seedStatus();
-
+export default function Home() {
   return (
     <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-10 sm:px-6 sm:py-16">
       <header>
@@ -74,19 +53,30 @@ export default async function Home() {
 
       <hr className="hr" />
 
-      <section className="flex flex-wrap items-center gap-3">
-        <h6 className="m-0 text-muted">Build status</h6>
-        <span className="tag tag-accent">Phase 0 · foundation</span>
-        <span className={seed.ok ? "tag tag-accent-2" : "tag tag-outline"}>
-          {seed.ok ? "Database connected" : "Database pending"}
-        </span>
-        <span className="text-[12px] text-muted">{seed.detail}</span>
+      {/* Worth trying, rather than build telemetry nobody outside the team
+          cares about. Someone landing here cold should know which two clicks
+          show the product. */}
+      <section>
+        <h6 className="text-muted">Two things worth trying</h6>
+        <ul className="list-none p-0 m-0 grid gap-2 sm:grid-cols-2 mt-2">
+          <li className="text-[14px]">
+            Open the <strong>Kitchen Display</strong> and the{" "}
+            <strong>Menu</strong> side by side. Mark an item sold out on one and
+            watch the other update, without refreshing.
+          </li>
+          <li className="text-[14px]">
+            Place an order, then open the <strong>Dashboard</strong>. A proposal
+            will be waiting that nobody asked for — approve it and check the
+            menu again.
+          </li>
+        </ul>
       </section>
 
-      <p className="mt-6 text-[12px] text-muted">
-        Sales history in this build is synthetic and clearly labelled as such.
+      <p className="mt-6 text-[12px] text-muted max-w-2xl">
+        Sales history in this demo is synthetic and labelled as such throughout.
         Forecasts are a published formula, not a black box — the model narrates
-        the number, it never invents it.
+        the number, it never invents it. No agent holds a tool that moves money
+        or contacts a supplier.
       </p>
     </main>
   );

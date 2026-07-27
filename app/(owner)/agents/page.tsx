@@ -90,7 +90,7 @@ export default function AgentsPage() {
           className="btn btn-ghost ml-auto"
           disabled={running !== null}
           onClick={() => run("reset")}
-          title="Restore seeded demo state before another run-through"
+          title="Put the restaurant back to its starting state"
         >
           {running === "reset" ? "…" : "Reset demo data"}
         </button>

@@ -176,7 +176,8 @@ function MenuHome() {
 
         {tableId ? null : (
           <p className="text-[12px] text-muted mt-4">
-            No table scanned — open <code>/menu?table=3</code> to simulate a QR scan.
+            Scan the QR on your table to order. Browsing without one is fine —
+            you can still see the full menu.
           </p>
         )}
       </main>
