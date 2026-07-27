@@ -1,6 +1,8 @@
 # Submission materials
 
-## `deck.html` — 11-slide submission deck
+## `deck.html` — 8-slide submission deck
+
+Eight because that is the submission limit.
 
 Open it in a browser. Arrow keys, space, or click to advance; `Home`/`End` jump
 to the ends.
@@ -34,21 +36,25 @@ a fixed-size page.
 | # | Slide | The point it makes |
 |---|---|---|
 | 1 | Title | The one-sentence claim |
-| 2 | The problem | A restaurant running on memory |
-| 3 | The gap | Incumbents digitise recording, not deciding |
-| 4 | What is built | Three surfaces, one source of truth |
-| 5 | Propose → approve → log | **The differentiator** |
-| 6 | Guardrails are code | The 3/3 prompt-compliance finding |
-| 7 | The model narrates | Forecast is arithmetic, grounding is architectural |
-| 8 | Architecture | Decisions and why, including the LLM quota reversal |
-| 9 | Evidence | 16 eval cases, 13/0/3 |
-| 10 | Scope | What was cut, what never was |
-| 11 | Try it | Three things to attempt live |
+| 2 | Problem + gap | A restaurant on memory; incumbents digitise recording, not deciding |
+| 3 | What is built | Three surfaces, one source of truth |
+| 4 | It notices before anyone asks | **The differentiator** — propose, approve, log |
+| 5 | Guardrails are code | The 3/3 prompt-compliance finding |
+| 6 | The model narrates | Forecast is arithmetic; the measured quota reversal |
+| 7 | Evidence + scope | 16 eval cases, 13/0/3, and what was cut |
+| 8 | Try it | Three things to attempt live |
 
-Slides 5 and 6 are the ones to slow down on. Everything else is context for
-them.
+**Slides 4 and 5 carry the argument.** Everything else is context for them — if
+you are cut short, protect those two.
+
+Three slides were merged to reach the limit: the problem with the competitive
+gap, honesty with the architecture findings, and the eval results with the scope
+cuts. Nothing was dropped outright.
 
 ## See also
 
-- `../DEMO.md` — the timed six-minute live demo script
+- `TALKTRACK.md` — how to explain the forecast, the agent and the guardrails in
+  plain language, plus the questions worth being ready for
+- `RUNSHEET.md` — the one-screen timing card for while you are presenting
+- `../DEMO.md` — the full six-minute script with reasoning
 - `../README.md` — full technical write-up
