@@ -115,6 +115,11 @@ function OrderBoard() {
                       <span className="card-meta">
                         <Clock size={12} />
                         {elapsedMin(order.placed_at)} min
+                        {!done ? (
+                          <span className="ml-auto text-accent">
+                            Tap → {t(nextStatus(order.status) as StringId)}
+                          </span>
+                        ) : null}
                       </span>
                     </button>
                   );

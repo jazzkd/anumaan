@@ -1,8 +1,10 @@
 "use client";
 
 import { CustomerHeader } from "@/components/customer/CustomerHeader";
+import { QtyStepper } from "@/components/customer/QtyStepper";
 import { ErrorNote, Spinner, VegMark, inr } from "@/components/ui";
 import { useCart } from "@/lib/cart";
+import Link from "next/link";
 import { useT } from "@/lib/i18n";
 import { useLiveData } from "@/lib/useLiveData";
 import type { MenuItem } from "@/lib/types";
@@ -15,7 +17,7 @@ export default function ItemDetail({
 }) {
   const { id } = use(params);
   const { data, error, isLoading } = useLiveData<MenuItem[]>("/api/menu");
-  const { add, lines } = useCart();
+  const { lines } = useCart();
   const { t } = useT();
 
   const item = data?.find((m) => m.id === Number(id));
@@ -53,23 +55,16 @@ export default function ItemDetail({
 
             <hr className="hr" />
 
-            {item.available ? (
-              <>
-                <button
-                  className="btn btn-primary w-full justify-center"
-                  onClick={() => add(item.id)}
-                >
-                  {t("addToCart")}
-                </button>
-                {inCart > 0 ? (
-                  <p className="text-[13px] text-muted mt-2">
-                    {t("inCart")}: {inCart}
-                  </p>
-                ) : null}
-              </>
-            ) : (
-              <span className="tag tag-neutral">{t("soldOut")}</span>
-            )}
+            <QtyStepper item={item} size="lg" />
+
+            {inCart > 0 ? (
+              <Link
+                href="/cart"
+                className="btn btn-secondary w-full justify-center mt-2 no-underline"
+              >
+                {t("viewCart")} · {inr(Number(item.price) * inCart)}
+              </Link>
+            ) : null}
           </>
         ) : null}
       </main>

@@ -1,19 +1,19 @@
 "use client";
 
 import { CustomerHeader } from "@/components/customer/CustomerHeader";
+import { QtyStepper } from "@/components/customer/QtyStepper";
 import { ErrorNote, Spinner, VegMark, inr } from "@/components/ui";
 import { useCart } from "@/lib/cart";
 import { useT } from "@/lib/i18n";
 import { sendMutation, useLiveData } from "@/lib/useLiveData";
 import type { MenuItem, Order } from "@/lib/types";
-import { Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function CartPage() {
   const { data: menu, error } = useLiveData<MenuItem[]>("/api/menu");
-  const { lines, setQty, clear, tableId } = useCart();
+  const { lines, clear, tableId } = useCart();
   const { t } = useT();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -71,24 +71,12 @@ export default function CartPage() {
                   <VegMark veg={item.veg} />
                   <span className="flex-1 min-w-0 truncate">{item.name}</span>
 
-                  <span className="flex items-center gap-1 flex-none">
-                    <button
-                      className="btn btn-icon btn-secondary"
-                      aria-label="Decrease"
-                      onClick={() => setQty(item.id, qty - 1)}
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className="w-6 text-center font-[var(--font-heading)] font-extrabold">
-                      {qty}
-                    </span>
-                    <button
-                      className="btn btn-icon btn-secondary"
-                      aria-label="Increase"
-                      onClick={() => setQty(item.id, qty + 1)}
-                    >
-                      <Plus size={16} />
-                    </button>
+                  {/* Same control as the menu, so removing the last one is a
+                      bin here too rather than a minus that silently deletes. */}
+                  <QtyStepper item={item} />
+
+                  <span className="sr-only" aria-hidden>
+                    {qty}
                   </span>
 
                   <span className="w-16 text-right font-[var(--font-heading)] font-extrabold flex-none">

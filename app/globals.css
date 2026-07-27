@@ -308,6 +308,61 @@ textarea.input { min-height: 90px; resize: vertical; }
 .elev-md { box-shadow: var(--shadow-md); }
 .elev-lg { box-shadow: var(--shadow-lg); }
 
+/* — quantity stepper —
+   Reads as one control, not three buttons. Filled with the accent so it is
+   obvious at a glance which rows are already in the cart while scrolling a
+   long menu. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  border-radius: var(--radius-md);
+  user-select: none;
+}
+.stepper button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.stepper button:hover { background: var(--color-accent-600); }
+.stepper button:active { background: var(--color-accent-700); }
+.stepper button:focus-visible { outline: 2px solid var(--color-ink); outline-offset: -2px; }
+.stepper .qty {
+  min-width: 28px;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.stepper-lg { justify-content: space-between; }
+.stepper-lg button { width: 48px; height: 48px; }
+.stepper-lg .qty { font-size: 18px; }
+
+/* — sticky cart bar —
+   A diner scrolling the Breads section should not have to hunt for the cart
+   icon to find out what they have. */
+.cartbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+}
+
 /* — tags — */
 .tag {
   display: inline-flex;

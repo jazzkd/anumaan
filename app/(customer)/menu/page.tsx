@@ -1,6 +1,7 @@
 "use client";
 
 import { CustomerHeader } from "@/components/customer/CustomerHeader";
+import { QtyStepper } from "@/components/customer/QtyStepper";
 import { ErrorNote, Spinner, VegMark, inr } from "@/components/ui";
 import { useCart } from "@/lib/cart";
 import { useT } from "@/lib/i18n";
@@ -14,7 +15,7 @@ type Filter = "all" | "veg" | "nonveg";
 
 function MenuHome() {
   const { data, error, isLoading } = useLiveData<MenuItem[]>("/api/menu");
-  const { add, setTableId, tableId } = useCart();
+  const { lines, count, setTableId, tableId } = useCart();
   const { t } = useT();
   const params = useSearchParams();
   const [query, setQuery] = useState("");
@@ -42,6 +43,11 @@ function MenuHome() {
     }
     return [...byCategory.entries()];
   }, [data, filter, query]);
+
+  const cartTotal = lines.reduce((sum, l) => {
+    const item = data?.find((m) => m.id === l.menuItemId);
+    return sum + (item ? Number(item.price) * l.qty : 0);
+  }, 0);
 
   return (
     <>
@@ -113,21 +119,29 @@ function MenuHome() {
                     </span>
                   </Link>
 
-                  {item.available ? (
-                    <button
-                      className="btn btn-secondary flex-none"
-                      onClick={() => add(item.id)}
-                    >
-                      {t("addToCart")}
-                    </button>
-                  ) : (
-                    <span className="tag tag-neutral flex-none">{t("soldOut")}</span>
-                  )}
+                  <QtyStepper item={item} />
                 </li>
               ))}
             </ul>
           </section>
         ))}
+
+        {/* Filtering to nothing is a dead end otherwise — the page just empties
+            and gives no hint that the veg filter is the reason. */}
+        {data && grouped.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-muted m-0">No dishes match that.</p>
+            <button
+              className="btn btn-secondary mt-2"
+              onClick={() => {
+                setQuery("");
+                setFilter("all");
+              }}
+            >
+              Clear search and filters
+            </button>
+          </div>
+        ) : null}
 
         <Link href="/queue" className="btn btn-ghost no-underline">
           {t("joinQueue")}
@@ -139,6 +153,20 @@ function MenuHome() {
           </p>
         )}
       </main>
+
+      {/* Running total, always in reach. Rendered outside <main> so it sticks
+          to the viewport rather than the scrolling content. */}
+      {count > 0 ? (
+        <Link href="/cart" className="cartbar">
+          <span className="font-[var(--font-heading)] font-extrabold">
+            {count} {count === 1 ? "item" : "items"}
+          </span>
+          <span className="opacity-85">{inr(cartTotal)}</span>
+          <span className="ml-auto font-[var(--font-heading)] font-extrabold">
+            {t("viewCart")} →
+          </span>
+        </Link>
+      ) : null}
     </>
   );
 }
