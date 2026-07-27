@@ -34,7 +34,11 @@ const H = 7.5;
 const M = 0.85; // page margin
 
 const pptx = new PptxGenJS();
-pptx.layout = "LAYOUT_16x9";
+// LAYOUT_WIDE is 13.333 × 7.5in. LAYOUT_16x9 is also 16:9 but only 10 × 5.625in
+// — same aspect, two-thirds the coordinate space — so every position past 10in
+// silently lands off-canvas. The W/H constants below must match whatever is
+// set here.
+pptx.layout = "LAYOUT_WIDE";
 pptx.author = "Anumaan";
 pptx.company = "VibeAthon submission";
 pptx.title = "Anumaan — restaurant operations that predict, propose and log";
@@ -422,5 +426,18 @@ function footer(s, left, right = "", invert = false) {
 }
 
 mkdirSync("submission", { recursive: true });
-await pptx.writeFile({ fileName: "submission/Anumaan.pptx" });
-console.log("wrote submission/Anumaan.pptx — 8 slides");
+
+// PowerPoint holds an exclusive lock while the deck is open, which it very
+// often is when you are regenerating to check a fix. Fall back to a second
+// filename rather than failing outright.
+const target = "submission/Anumaan.pptx";
+try {
+  await pptx.writeFile({ fileName: target });
+  console.log(`wrote ${target} — 8 slides`);
+} catch (err) {
+  if (err?.code !== "EBUSY" && err?.code !== "EPERM") throw err;
+  const alt = "submission/Anumaan-latest.pptx";
+  await pptx.writeFile({ fileName: alt });
+  console.log(`${target} is open in PowerPoint and locked.`);
+  console.log(`wrote ${alt} instead — close PowerPoint and re-run to replace the original.`);
+}
