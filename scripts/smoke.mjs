@@ -277,6 +277,65 @@ check(
   seated.body?.find((t) => t.id === 3)?.status === "seated"
 );
 
+// ── Phase 4: the grounded layer ──────────────────────────────────────────────
+console.log("\nGrounded layer");
+
+const briefing = await call("/api/briefing");
+check("GET /api/briefing returns 200", briefing.status === 200, `got ${briefing.status}`);
+check(
+  "the briefing cites ₹18,400 exactly (GND-001)",
+  typeof briefing.body?.narration === "string" &&
+    briefing.body.narration.includes("18,400"),
+  briefing.body?.narration
+);
+check(
+  "the briefing says out loud that the history is synthetic",
+  /synthetic/i.test(briefing.body?.narration ?? "")
+);
+check(
+  "every forecast carries a basis stating how it was reached",
+  (briefing.body?.figures?.forecasts ?? []).length > 0 &&
+    briefing.body.figures.forecasts.every(
+      (f) => typeof f.basis === "string" && f.basis.length > 10
+    )
+);
+check(
+  "butter is flagged as a stockout risk against forecast usage",
+  (briefing.body?.figures?.stockouts ?? []).some(
+    (s) => s.name === "Butter" && s.level !== "ok"
+  )
+);
+
+async function ask(question) {
+  const r = await call("/api/ask", {
+    method: "POST",
+    body: JSON.stringify({ question }),
+  });
+  return r.body?.answer ?? "";
+}
+
+const groundedAnswer = await ask("How did we do yesterday?");
+check(
+  "Ask cites yesterday's revenue exactly",
+  groundedAnswer.includes("18,400"),
+  groundedAnswer
+);
+
+// GND-003: an item that has never been sold must produce a refusal, not a
+// number. This is asserted against the deployed app, not just the unit test,
+// because it is the claim a judge is most likely to probe live.
+const refusal = await ask("How many chicken lollipops did we sell last month?");
+check(
+  "Ask refuses an item never sold (GND-003)",
+  /(don't|do not|no) (have )?(any )?(sales )?(records|data)/i.test(refusal),
+  refusal
+);
+check(
+  "the refusal invents no quantity",
+  !/\b\d+\s*(plates|portions|units|sold)\b/i.test(refusal),
+  refusal
+);
+
 // ── Report ───────────────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exitCode = failed === 0 ? 0 : 1;

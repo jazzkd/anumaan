@@ -14,6 +14,7 @@ import type { ReactNode } from "react";
  */
 const NAV: { href: string; id: StringId }[] = [
   { href: "/briefing", id: "briefing" },
+  { href: "/ask", id: "ask" },
   { href: "/orders", id: "orders" },
   { href: "/tables", id: "tables" },
   { href: "/inventory", id: "inventory" },

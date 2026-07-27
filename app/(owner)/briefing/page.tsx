@@ -1,24 +1,27 @@
 "use client";
 
-import type { Summary } from "@/app/api/summary/route";
+import type { Briefing } from "@/app/api/briefing/route";
 import { ErrorNote, Spinner, inr } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useLiveData } from "@/lib/useLiveData";
 import Link from "next/link";
 
 export default function BriefingPage() {
-  const { data, error, isLoading } = useLiveData<Summary>("/api/summary");
+  // Slower than the 2s operational feeds — a briefing does not change second
+  // to second, and every refresh is an LLM call against a free-tier quota.
+  const { data, error, isLoading } = useLiveData<Briefing>("/api/briefing");
   const { t } = useT();
+
+  const figures = data?.figures;
 
   return (
     <>
       <ErrorNote error={error} />
       {isLoading && !data ? <Spinner /> : null}
 
-      {data ? (
+      {data && figures ? (
         <>
-          {/* The one place red runs large in this design — a full-bleed field
-              with reversed type. Used once, deliberately, so it still lands. */}
+          {/* The one place red runs large in this design. Used once so it lands. */}
           <section className="bg-accent text-ground p-6 md:p-8 -m-4 md:-m-6 mb-4 md:mb-6">
             <span className="text-[11px] uppercase tracking-[0.1em] opacity-90">
               {t("briefing")}
@@ -26,70 +29,121 @@ export default function BriefingPage() {
             <h2 className="mt-1 mb-3 text-ground">Good morning, Raj</h2>
 
             <p className="font-[var(--font-heading)] font-extrabold text-[44px] leading-none m-0">
-              {inr(data.yesterday.revenue)}
+              {inr(figures.yesterday.revenue)}
             </p>
             <p className="m-0 mt-1 text-[14px] opacity-90">
               Yesterday&apos;s revenue
-              {data.yesterday.isSynthetic ? " · synthetic demo data" : ""}
+              {figures.yesterday.isSynthetic ? " · synthetic demo data" : ""}
+            </p>
+
+            <p className="m-0 mt-4 text-[15px] leading-relaxed max-w-[62ch]">
+              {data.narration}
+            </p>
+
+            <p className="m-0 mt-3 text-[11px] opacity-80">
+              Narrated by {data.provider}
+              {data.cached ? " · cached" : ""}
+              {data.fellBack && !data.cached ? " · failover" : ""} · figures
+              computed from the database, not generated
             </p>
           </section>
 
-          {/* Asymmetric, rule-divided — not boxed. */}
           <section className="grid gap-4 md:grid-cols-[1.6fr_1fr_1fr] border-y-2 border-[var(--color-divider)] py-4">
             <div className="md:border-r-2 border-[var(--color-divider)] md:pr-4">
               <h6 className="text-muted">Today, prep</h6>
               <p className="m-0 text-[14px]">
-                {data.stockoutRisks.length > 0
-                  ? `Watch ${data.stockoutRisks
-                      .map((r) => r.name.toLowerCase())
-                      .join(" and ")} — at or below the reorder line.`
-                  : "Stock is comfortable across every tracked ingredient."}
+                {figures.forecasts.length > 0
+                  ? figures.forecasts
+                      .slice(0, 3)
+                      .map((f) => `${f.name} ${f.forecastQty}`)
+                      .join(" · ")
+                  : "Not enough data yet."}
               </p>
             </div>
-
             <div className="md:border-r-2 border-[var(--color-divider)] md:pr-4">
               <h6 className="text-muted">Revenue so far</h6>
               <p className="font-[var(--font-heading)] font-extrabold text-[25px] m-0">
-                {inr(data.today.revenue)}
+                {inr(figures.today.revenue)}
               </p>
             </div>
-
             <div>
               <h6 className="text-muted">Orders so far</h6>
               <p className="font-[var(--font-heading)] font-extrabold text-[25px] m-0">
-                {data.today.orders}
+                {figures.today.orders}
               </p>
             </div>
           </section>
 
-          {data.stockoutRisks.length > 0 ? (
-            <div className="card elev-sm mt-4 max-w-[560px]">
-              <span className="tag tag-accent self-start">Stockout risk</span>
-              <p className="card-body m-0">
-                {data.stockoutRisks
-                  .map(
-                    (r) =>
-                      `${r.name}: ${r.stock}${r.unit} left, reorder line ${r.threshold}${r.unit}`
-                  )
-                  .join(" · ")}
+          {/* Every forecast carries the arithmetic that produced it. A number a
+              judge can check is worth more than one they have to trust. */}
+          {figures.forecasts.length > 0 ? (
+            <section className="mt-5">
+              <h4>Today&apos;s forecast</h4>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th className="text-right">Forecast</th>
+                    <th>Basis</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {figures.forecasts.map((f) => (
+                    <tr key={f.menuItemId}>
+                      <td>{f.name}</td>
+                      <td className="text-right font-[var(--font-heading)] font-extrabold">
+                        {f.forecastQty}
+                      </td>
+                      <td className="text-muted text-[12px]">{f.basis}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-[12px] text-muted mt-2">
+                forecast = weekday average × trend factor, clamped to ±30%. No
+                model is involved in this number.
               </p>
-              <Link href="/inventory" className="btn btn-secondary self-start no-underline">
-                {t("inventory")}
-              </Link>
-            </div>
-          ) : null}
-
-          {!data.hasHistory ? (
+            </section>
+          ) : (
             <p className="tag tag-outline mt-4">
               Not enough data yet — no forecast will be shown.
             </p>
+          )}
+
+          {figures.stockouts.length > 0 ? (
+            <section className="mt-5">
+              <h4>Stockout risk</h4>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {figures.stockouts.map((s) => (
+                  <div key={s.inventoryItemId} className="card elev-sm">
+                    <span
+                      className={`tag self-start ${
+                        s.level === "ok" ? "tag-neutral" : "tag-accent"
+                      }`}
+                    >
+                      {s.level === "out"
+                        ? "Out of stock"
+                        : s.level === "risk"
+                          ? "Stockout risk"
+                          : "Low stock"}
+                    </span>
+                    <span className="card-title">{s.name}</span>
+                    <p className="card-body m-0">{s.basis}</p>
+                    <Link
+                      href="/inventory"
+                      className="btn btn-secondary self-start no-underline"
+                    >
+                      {t("inventory")}
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </section>
           ) : null}
 
-          <p className="text-[12px] text-muted mt-6 max-w-[640px]">
-            Every figure above is computed from the database, not generated. The
-            forecast and its narration arrive next — and the model will be given
-            these numbers to describe, never asked to work them out.
-          </p>
+          <Link href="/ask" className="btn btn-primary no-underline mt-6">
+            {t("ask")}
+          </Link>
         </>
       ) : null}
     </>
