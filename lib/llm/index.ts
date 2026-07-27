@@ -98,6 +98,92 @@ export async function complete(
 // demo, and "it behaved differently this morning" is not a debuggable state at
 // hour 30. Note gemini-2.5-flash now 404s for new API keys — Google retired it
 // for new users, which is exactly the kind of drift the pin protects against.
+export type ToolCall = { name: string; args: Record<string, unknown> };
+
+export type ToolResult = {
+  toolCalls: ToolCall[];
+  text: string;
+  provider: Provider;
+  /** True when no provider was reachable and no tool decision was made. */
+  offline: boolean;
+};
+
+/**
+ * Tool-calling turn. Returns whatever the model decided to call — including
+ * nothing, which is a legitimate and often correct outcome (TRJ-003 requires
+ * exactly that when asked to contact a supplier).
+ *
+ * Groq only: it is OpenAI-compatible, it is the primary provider, and its
+ * quota can absorb the 5-trial eval runs. Gemini's 20/day makes it useless for
+ * trajectory evaluation, so there is no second implementation to keep correct.
+ */
+export async function callWithTools(args: {
+  system: string;
+  user: string;
+  tools: unknown[];
+  temperature?: number;
+}): Promise<ToolResult> {
+  if (!process.env.GROQ_API_KEY) {
+    return { toolCalls: [], text: "", provider: "canned", offline: true };
+  }
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        temperature: args.temperature ?? 0.1,
+        max_tokens: 900,
+        tools: args.tools,
+        tool_choice: "auto",
+        messages: [
+          { role: "system", content: args.system },
+          { role: "user", content: args.user },
+        ],
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!res.ok) throw new Error(`Groq ${res.status}`);
+    const body = await res.json();
+    const message = body?.choices?.[0]?.message;
+
+    const toolCalls: ToolCall[] = (message?.tool_calls ?? []).flatMap(
+      (c: { function?: { name?: string; arguments?: string } }) => {
+        if (!c.function?.name) return [];
+        try {
+          return [
+            {
+              name: c.function.name,
+              args: JSON.parse(c.function.arguments ?? "{}"),
+            },
+          ];
+        } catch {
+          // A tool call we cannot parse is not a tool call we should act on.
+          return [];
+        }
+      }
+    );
+
+    return {
+      toolCalls,
+      text: (message?.content ?? "").trim(),
+      provider: "groq",
+      offline: false,
+    };
+  } catch {
+    return { toolCalls: [], text: "", provider: "canned", offline: true };
+  }
+}
+
+// Pinned rather than `gemini-flash-latest`: an alias can rotate underneath a
+// demo, and "it behaved differently this morning" is not a debuggable state at
+// hour 30. Note gemini-2.5-flash now 404s for new API keys — Google retired it
+// for new users, which is exactly the kind of drift the pin protects against.
 const GEMINI_MODEL = "gemini-3.6-flash";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
