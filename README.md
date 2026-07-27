@@ -236,6 +236,14 @@ rest of this product is built on.
 
 ---
 
+## Photography
+
+Dish photos are from Wikimedia Commons, downloaded into `public/menu/` rather
+than hotlinked so the demo does not depend on an external host at run time.
+Several are CC BY-SA, which requires attribution to travel with the work —
+`public/menu/CREDITS.md` is that attribution, and it is linked from the customer
+menu itself. Replace them with your own photography before any commercial use.
+
 ## Specs in this repo
 
 | File | What it is |

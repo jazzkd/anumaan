@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "slug": "paneer-tikka",
+    "name": "Paneer Tikka",
+    "title": "File:Paneer tikka 1.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Paneer_tikka_1.jpg/960px-Paneer_tikka_1.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 4.0",
+    "artist": "Srikoundinya66",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Paneer_tikka_1.jpg"
+  },
+  {
+    "id": 2,
+    "slug": "chicken-65",
+    "name": "Chicken 65",
+    "title": "File:Chicken 65 (Dish).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Chicken_65_%28Dish%29.jpg/960px-Chicken_65_%28Dish%29.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 3.0",
+    "artist": "Amiyashrivastava",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Chicken_65_(Dish).jpg"
+  },
+  {
+    "id": 3,
+    "slug": "butter-chicken",
+    "name": "Butter Chicken",
+    "title": "File:Chicken makhani.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Chicken_makhani.jpg/960px-Chicken_makhani.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 2.0",
+    "artist": "stu_spivack",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Chicken_makhani.jpg"
+  },
+  {
+    "id": 4,
+    "slug": "dal-makhani",
+    "name": "Dal Makhani",
+    "title": "File:Dal Makhani..JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Dal_Makhani..JPG/960px-Dal_Makhani..JPG",
+    "width": 900,
+    "licence": "CC0",
+    "artist": "Miansari66",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Dal_Makhani..JPG"
+  },
+  {
+    "id": 5,
+    "slug": "paneer-butter-masala",
+    "name": "Paneer Butter Masala",
+    "title": "File:Paneer butter masala 3.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Paneer_butter_masala_3.jpg/960px-Paneer_butter_masala_3.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 4.0",
+    "artist": "Gannu03",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Paneer_butter_masala_3.jpg"
+  },
+  {
+    "id": 6,
+    "slug": "veg-biryani",
+    "name": "Veg Biryani",
+    "title": "File:Veg biryani.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Veg_biryani.jpg/960px-Veg_biryani.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 4.0",
+    "artist": "Ramesh bethi",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Veg_biryani.jpg"
+  },
+  {
+    "id": 7,
+    "slug": "chicken-biryani",
+    "name": "Chicken Biryani",
+    "title": "File:Chicken biryani 02-06-2015 (India).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Chicken_biryani_02-06-2015_%28India%29.jpg/960px-Chicken_biryani_02-06-2015_%28India%29.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 4.0",
+    "artist": "Shivani shipra",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Chicken_biryani_02-06-2015_(India).jpg"
+  },
+  {
+    "id": 8,
+    "slug": "tandoori-roti",
+    "name": "Tandoori Roti",
+    "title": "File:Tandoori-roti.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Tandoori-roti.jpg/960px-Tandoori-roti.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 4.0",
+    "artist": "Ravi Dwivedi",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Tandoori-roti.jpg"
+  },
+  {
+    "id": 9,
+    "slug": "garlic-naan",
+    "name": "Garlic Naan",
+    "title": "File:Adraki Naan (Garlic Naan).JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Adraki_Naan_%28Garlic_Naan%29.JPG/960px-Adraki_Naan_%28Garlic_Naan%29.JPG",
+    "width": 900,
+    "licence": "CC BY-SA 4.0",
+    "artist": "HARIOM.AWASTHI",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Adraki_Naan_(Garlic_Naan).JPG"
+  },
+  {
+    "id": 10,
+    "slug": "gulab-jamun",
+    "name": "Gulab Jamun",
+    "title": "File:Gulab Jamun as a Diwali Sweet.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Gulab_Jamun_as_a_Diwali_Sweet.jpg/960px-Gulab_Jamun_as_a_Diwali_Sweet.jpg",
+    "width": 900,
+    "licence": "CC BY-SA 4.0",
+    "artist": "Yakshitha",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Gulab_Jamun_as_a_Diwali_Sweet.jpg"
+  },
+  {
+    "id": 11,
+    "slug": "masala-chai",
+    "name": "Masala Chai",
+    "title": "File:Masala Chai.JPG",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Masala_Chai.JPG/960px-Masala_Chai.JPG",
+    "width": 900,
+    "licence": "Public domain",
+    "artist": "Miansari66",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Masala_Chai.JPG"
+  },
+  {
+    "id": 12,
+    "slug": "mango-lassi",
+    "name": "Mango Lassi",
+    "title": "File:Mango Lassi and Butter Milk - Vel South Indian Kitchen + Bar.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Mango_Lassi_and_Butter_Milk_-_Vel_South_Indian_Kitchen_%2B_Bar.jpg/960px-Mango_Lassi_and_Butter_Milk_-_Vel_South_Indian_Kitchen_%2B_Bar.jpg",
+    "width": 900,
+    "licence": "CC0",
+    "artist": "Andy Li",
+    "descUrl": "https://commons.wikimedia.org/wiki/File:Mango_Lassi_and_Butter_Milk_-_Vel_South_Indian_Kitchen_%2B_Bar.jpg"
+  }
+]

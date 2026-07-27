@@ -5,8 +5,10 @@ import { QtyStepper } from "@/components/customer/QtyStepper";
 import { ErrorNote, Spinner, VegMark, inr } from "@/components/ui";
 import { useCart } from "@/lib/cart";
 import { useT } from "@/lib/i18n";
+import { dishImage } from "@/lib/dishImages";
 import { useLiveData } from "@/lib/useLiveData";
 import type { MenuItem } from "@/lib/types";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -99,9 +101,15 @@ function MenuHome() {
                     href={`/menu/${item.id}`}
                     className="flex items-center gap-3 flex-1 min-w-0 no-underline text-ink"
                   >
-                    <span
-                      className="w-12 h-12 flex-none border border-[var(--color-divider)] bg-surface"
-                      aria-hidden
+                    {/* alt is empty on purpose: the dish name sits right
+                        beside it, so announcing the photo too would just make
+                        a screen reader say everything twice. */}
+                    <Image
+                      src={dishImage(item.id) ?? "/menu/placeholder.svg"}
+                      alt=""
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 flex-none object-cover border border-[var(--color-divider)] bg-surface"
                     />
                     <span className="flex-1 min-w-0">
                       <span className="flex items-center gap-1.5">
@@ -146,6 +154,14 @@ function MenuHome() {
         <Link href="/queue" className="btn btn-ghost no-underline">
           {t("joinQueue")}
         </Link>
+
+        <p className="text-[11px] text-muted mt-6">
+          Dish photography from{" "}
+          <a href="/menu/CREDITS.md" className="text-muted underline">
+            Wikimedia Commons contributors
+          </a>
+          , used under their respective licences.
+        </p>
 
         {tableId ? null : (
           <p className="text-[12px] text-muted mt-4">

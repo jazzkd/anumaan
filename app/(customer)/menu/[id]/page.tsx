@@ -4,8 +4,10 @@ import { CustomerHeader } from "@/components/customer/CustomerHeader";
 import { QtyStepper } from "@/components/customer/QtyStepper";
 import { ErrorNote, Spinner, VegMark, inr } from "@/components/ui";
 import { useCart } from "@/lib/cart";
+import Image from "next/image";
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
+import { dishImage } from "@/lib/dishImages";
 import { useLiveData } from "@/lib/useLiveData";
 import type { MenuItem } from "@/lib/types";
 import { use } from "react";
@@ -35,9 +37,13 @@ export default function ItemDetail({
 
         {item ? (
           <>
-            <div
-              className="w-full h-[200px] border border-[var(--color-divider)] bg-surface"
-              aria-hidden
+            <Image
+              src={dishImage(item.id) ?? "/menu/placeholder.svg"}
+              alt={item.name}
+              width={900}
+              height={420}
+              priority
+              className="w-full h-[220px] object-cover border border-[var(--color-divider)] bg-surface"
             />
 
             <div className="flex items-center gap-2 mt-4">
