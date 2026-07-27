@@ -308,6 +308,178 @@ textarea.input { min-height: 90px; resize: vertical; }
 .elev-md { box-shadow: var(--shadow-md); }
 .elev-lg { box-shadow: var(--shadow-lg); }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   "Dining" — the customer surface only.
+
+   Visual direction taken from a fine-dining reference the client shared:
+   dark warm ground, image-forward cards, uppercase letterspaced section
+   headers, generous spacing. Written from scratch against our own tokens —
+   no third-party CSS or assets are used, so there is no licence or
+   attribution to carry.
+
+   Scoped to [data-theme="dining"], which only the customer layout sets. The
+   kitchen display stays light on purpose: it is read at arm's length in a
+   bright kitchen, and dark UI in daylight is harder to scan. The owner
+   dashboard stays light because dense tables and charts read better that way.
+   Reverting is deleting this block and one attribute.
+   ══════════════════════════════════════════════════════════════════════ */
+[data-theme="dining"] {
+  /* The @theme tokens are overridden too, not just the aliases: Tailwind v4
+     compiles `bg-ground` to `var(--color-ground)`, so redefining them here is
+     what carries the palette into every utility class on this surface. Miss
+     these and the cart, queue and bill screens stay stubbornly light. */
+  --color-ground: #14110f;
+  --color-surface: #1f1a17;
+  --color-ink: #f4efe9;
+
+  --color-bg: #14110f;
+  --color-text: #f4efe9;
+  --color-divider: rgba(244, 239, 233, 0.18);
+  --color-gold: #c9a227;
+
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* The cart badge sits on the accent and must stay legible now that "ground"
+   is nearly black. */
+[data-theme="dining"] .text-ground { color: #fff; }
+
+[data-theme="dining"] .text-muted {
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+/* Section headers: uppercase, letterspaced, with a hairline rule that stops
+   at the text rather than running the full width. */
+[data-theme="dining"] .dining-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 var(--space-3);
+}
+[data-theme="dining"] .dining-section h5 {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  white-space: nowrap;
+}
+[data-theme="dining"] .dining-section::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-divider);
+}
+
+/* Image-forward dish card. The photograph does the selling; the type stays
+   quiet underneath it. */
+[data-theme="dining"] .dish {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+[data-theme="dining"] .dish-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #241e1a;
+}
+[data-theme="dining"] .dish-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+[data-theme="dining"] .dish:hover .dish-media img { transform: scale(1.05); }
+[data-theme="dining"] .dish-sold .dish-media img { filter: grayscale(1) brightness(0.6); }
+
+[data-theme="dining"] .dish-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(20, 17, 15, 0.82);
+  padding: 4px 7px;
+  display: inline-flex;
+  align-items: center;
+}
+[data-theme="dining"] .dish-price {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 15px;
+  padding: 5px 10px;
+}
+[data-theme="dining"] .dish-body {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+[data-theme="dining"] .dish-name {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+  line-height: 1.2;
+}
+[data-theme="dining"] .dish-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* The masthead a diner lands on after scanning. */
+[data-theme="dining"] .dining-hero {
+  padding: var(--space-6) var(--space-4) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+}
+[data-theme="dining"] .dining-hero .eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+[data-theme="dining"] .dining-hero h2 {
+  margin: 6px 0 2px;
+  font-size: 30px;
+}
+
+/* Form controls have to be re-tuned for the dark ground. */
+[data-theme="dining"] .input {
+  background: var(--color-surface);
+  border-color: var(--color-divider);
+  color: var(--color-text);
+}
+[data-theme="dining"] .input::placeholder {
+  color: color-mix(in srgb, var(--color-text) 40%, transparent);
+}
+[data-theme="dining"] .seg { border-color: var(--color-divider); }
+[data-theme="dining"] .seg-opt + .seg-opt { border-left-color: var(--color-divider); }
+[data-theme="dining"] .seg-opt:not(:has(input:checked)):hover {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+[data-theme="dining"] .btn-secondary { border-color: var(--color-divider); }
+[data-theme="dining"] .btn-secondary:hover {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+[data-theme="dining"] .tag-neutral {
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+  color: var(--color-text);
+}
+[data-theme="dining"] .card { background: var(--color-surface); }
+[data-theme="dining"] .nav,
+[data-theme="dining"] header { border-color: var(--color-divider); }
+
 /* — quantity stepper —
    Reads as one control, not three buttons. Filled with the accent so it is
    obvious at a glance which rows are already in the cart while scrolling a

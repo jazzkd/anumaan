@@ -12,7 +12,12 @@ export default function CustomerLayout({ children }: { children: ReactNode }) {
   return (
     <LangProvider>
       <CartProvider>
-        <div className="w-full max-w-[480px] mx-auto min-h-dvh flex flex-col bg-ground">
+        {/* data-theme scopes the dining palette to this surface. The kitchen
+            and owner dashboards never see it — see globals.css for why. */}
+        <div
+          data-theme="dining"
+          className="w-full max-w-[520px] mx-auto min-h-dvh flex flex-col"
+        >
           {children}
         </div>
       </CartProvider>

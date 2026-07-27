@@ -55,6 +55,15 @@ function MenuHome() {
     <>
       <CustomerHeader />
 
+      <div className="dining-hero">
+        <span className="eyebrow">Spice Route Kitchen</span>
+        <h2>{t("menuHome")}</h2>
+        <p className="text-muted text-[13px] m-0">
+          {tableId ? `${t("table")} ${tableId} · ` : ""}Order from your phone —
+          no app, no waiting for a server.
+        </p>
+      </div>
+
       <div className="px-4 py-4 flex flex-col gap-3">
         <input
           className="input"
@@ -84,50 +93,52 @@ function MenuHome() {
         <ErrorNote error={error} />
 
         {grouped.map(([category, items]) => (
-          <section key={category} className="mb-6">
-            <h5 className="pb-1.5 mb-2 border-b-2 border-[var(--color-divider)]">
-              {category}
-            </h5>
+          <section key={category}>
+            <div className="dining-section">
+              <h5>{category}</h5>
+            </div>
 
-            <ul className="list-none p-0 m-0 flex flex-col">
+            <ul className="list-none p-0 m-0 grid grid-cols-2 gap-3">
               {items.map((item) => (
                 <li
                   key={item.id}
-                  className={`flex items-center gap-3 py-3 border-b border-[var(--color-divider)] ${
-                    item.available ? "" : "opacity-55"
-                  }`}
+                  className={`dish ${item.available ? "" : "dish-sold"}`}
                 >
                   <Link
                     href={`/menu/${item.id}`}
-                    className="flex items-center gap-3 flex-1 min-w-0 no-underline text-ink"
+                    className="dish-media no-underline block"
                   >
-                    {/* alt is empty on purpose: the dish name sits right
-                        beside it, so announcing the photo too would just make
-                        a screen reader say everything twice. */}
+                    {/* alt is empty on purpose: the dish name sits directly
+                        beneath, so announcing the photo too would make a
+                        screen reader say everything twice. */}
                     <Image
                       src={dishImage(item.id) ?? "/menu/placeholder.svg"}
                       alt=""
-                      width={56}
-                      height={56}
-                      className="w-14 h-14 flex-none object-cover border border-[var(--color-divider)] bg-surface"
+                      width={400}
+                      height={300}
+                      className="w-full h-full object-cover"
                     />
-                    <span className="flex-1 min-w-0">
-                      <span className="flex items-center gap-1.5">
-                        <VegMark veg={item.veg} />
-                        <span className="font-medium truncate">{item.name}</span>
-                      </span>
-                      {/* Dotted leader to the price — the print-menu pattern
-                          the design calls for, not a card. */}
-                      <span className="flex items-baseline gap-1 mt-0.5">
-                        <span className="flex-1 border-b border-dotted border-[var(--color-divider)]" />
-                        <span className="font-[var(--font-heading)] font-extrabold text-[15px]">
-                          {inr(item.price)}
-                        </span>
-                      </span>
+                    <span className="dish-badge">
+                      <VegMark veg={item.veg} />
                     </span>
+                    <span className="dish-price">{inr(item.price)}</span>
                   </Link>
 
-                  <QtyStepper item={item} />
+                  <div className="dish-body">
+                    <Link
+                      href={`/menu/${item.id}`}
+                      className="dish-name no-underline"
+                      style={{ color: "inherit" }}
+                    >
+                      {item.name}
+                    </Link>
+                    {item.description ? (
+                      <p className="dish-desc m-0">{item.description}</p>
+                    ) : null}
+                    <div className="mt-auto pt-1">
+                      <QtyStepper item={item} />
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
