@@ -48,12 +48,46 @@ function cannedNarration(d: GroundedData): string {
   return parts.join(" ");
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const guard = await requireRole("owner");
   if (!guard.ok) return guard.response;
 
   const db = createAdminClient();
   const today = businessDate();
+  const forceRefresh =
+    new URL(request.url).searchParams.get("refresh") === "1";
+
+  // Today's narration is written once and then served from storage.
+  //
+  // This is a quota decision with teeth: Gemini's free tier returns 429 on the
+  // second request inside a minute, so any polling at all — and the dashboard
+  // polls — would exhaust it before the demo starts and then fail for the rest
+  // of it. Once a day is also simply correct: a morning briefing that rewrote
+  // itself every two seconds would be a worse product.
+  if (!forceRefresh) {
+    const { data: stored } = await db
+      .from("briefings")
+      .select("narration, provider")
+      .eq("restaurant_id", RESTAURANT_ID)
+      .eq("business_date", today)
+      .maybeSingle();
+
+    if (stored?.narration) {
+      try {
+        return ok<Briefing>({
+          narration: stored.narration,
+          // Figures are always recomputed, never served from the stored copy —
+          // the prose is a day old by design, the numbers must not be.
+          figures: await loadGroundedData(),
+          provider: stored.provider ?? "stored",
+          cached: true,
+          fellBack: false,
+        });
+      } catch {
+        // Fall through and rebuild from scratch.
+      }
+    }
+  }
 
   let figures: GroundedData;
   try {

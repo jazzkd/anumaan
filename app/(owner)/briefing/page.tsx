@@ -5,12 +5,28 @@ import { ErrorNote, Spinner, inr } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useLiveData } from "@/lib/useLiveData";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function BriefingPage() {
-  // Slower than the 2s operational feeds — a briefing does not change second
-  // to second, and every refresh is an LLM call against a free-tier quota.
-  const { data, error, isLoading } = useLiveData<Briefing>("/api/briefing");
+  // Never polled. Every fetch can cost an LLM call, and Gemini's free tier
+  // 429s on the second request within a minute — a 2s poll here would burn the
+  // quota before the demo began. Rewriting is explicit, via the button below.
+  const { data, error, isLoading, mutate } = useLiveData<Briefing>(
+    "/api/briefing",
+    { refreshInterval: 0 }
+  );
   const { t } = useT();
+  const [rewriting, setRewriting] = useState(false);
+
+  async function rewrite() {
+    setRewriting(true);
+    try {
+      const fresh = await fetch("/api/briefing?refresh=1").then((r) => r.json());
+      await mutate(fresh, { revalidate: false });
+    } finally {
+      setRewriting(false);
+    }
+  }
 
   const figures = data?.figures;
 
@@ -40,11 +56,20 @@ export default function BriefingPage() {
               {data.narration}
             </p>
 
-            <p className="m-0 mt-3 text-[11px] opacity-80">
-              Narrated by {data.provider}
-              {data.cached ? " · cached" : ""}
-              {data.fellBack && !data.cached ? " · failover" : ""} · figures
-              computed from the database, not generated
+            <p className="m-0 mt-3 text-[11px] opacity-80 flex flex-wrap items-center gap-2">
+              <span>
+                Narrated by {data.provider}
+                {data.cached ? " · written earlier today" : ""}
+                {data.fellBack && !data.cached ? " · failover" : ""} · figures
+                computed from the database, not generated
+              </span>
+              <button
+                className="btn btn-secondary text-ground border-ground/40"
+                onClick={rewrite}
+                disabled={rewriting}
+              >
+                {rewriting ? "…" : "Rewrite"}
+              </button>
             </p>
           </section>
 

@@ -1,14 +1,19 @@
 /**
- * One adapter over Gemini, Groq, and a canned fallback.
+ * One adapter over Groq, Gemini, and a canned fallback.
  *
  * Three reasons this indirection earns its keep on a hackathon timeline:
  *
- *  1. Free-tier quota is a live risk. Gemini Flash's free tier is reportedly
- *     ~250 requests/day, and dev iteration plus eval runs will eat that. Evals
- *     point at Groq specifically to protect the demo's quota.
+ *  1. Free-tier quota is a live risk, and bigger than the plan assumed. This
+ *     was budgeted around a reported ~250 requests/day for Gemini Flash. The
+ *     figure measured against our own key is far worse: gemini-3.6-flash
+ *     returns 429 with quotaId GenerateRequestsPerDayPerProjectPerModel-
+ *     FreeTier and quotaValue 20 — twenty requests per day, which a single
+ *     afternoon of development exhausts. Groq reports 1000/day on the same
+ *     workload, so Groq is primary and Gemini is the failover. That is the
+ *     reverse of the original plan, changed on evidence rather than taste.
  *  2. A live API call must never be a single point of failure on stage. Every
- *     caller can fall back, and the Daily Briefing additionally persists its
- *     last good result.
+ *     caller can fall back, and the Daily Briefing additionally stores its
+ *     narration so repeat views cost nothing.
  *  3. `canned` runs the entire product with no network at all, which is the
  *     demo-day insurance policy if both free tiers run dry.
  */
