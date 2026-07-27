@@ -336,6 +336,24 @@ check(
   refusal
 );
 
+// ── Restore the seeded baseline ──────────────────────────────────────────────
+// Every pass places real orders, which consume real stock. Left alone, butter
+// drifts from its seeded 1.5 kg toward zero and the demo's stockout story stops
+// matching the story the seed tells.
+const SEEDED_STOCK = { 1: 2.0, 2: 5.0, 3: 10.0, 4: 1.5, 5: 8.0, 6: 6.0 };
+for (const [id, stock] of Object.entries(SEEDED_STOCK)) {
+  await call(`/api/inventory/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ stock }),
+  });
+}
+const restored = await call("/api/inventory");
+check(
+  "inventory restored to its seeded baseline",
+  restored.body?.find((i) => i.id === 4)?.stock == 1.5,
+  `butter is ${restored.body?.find((i) => i.id === 4)?.stock}`
+);
+
 // ── Report ───────────────────────────────────────────────────────────────────
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exitCode = failed === 0 ? 0 : 1;

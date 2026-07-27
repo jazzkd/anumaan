@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/auth";
 import { RESTAURANT_ID } from "@/lib/constants";
 import { businessDate } from "@/lib/dates";
-import { loadGroundedData, type GroundedData } from "@/lib/groundedData";
+import { forPrompt, loadGroundedData, type GroundedData } from "@/lib/groundedData";
 import { ok, serverError } from "@/lib/http";
 import { complete } from "@/lib/llm";
 import { BRIEFING_SYSTEM, briefingUser } from "@/lib/llm/prompts";
@@ -76,7 +76,14 @@ export async function GET() {
 
   const fallback = cannedNarration(figures);
   const result = await complete(
-    { system: BRIEFING_SYSTEM, user: briefingUser(figures) },
+    {
+      system: BRIEFING_SYSTEM,
+      user: briefingUser(forPrompt(figures)),
+      // The whole figures object goes in the prompt, and Gemini's reasoning
+      // scales with it — 1600 was not enough headroom and every briefing
+      // silently failed over to Groq.
+      maxTokens: 3000,
+    },
     fallback
   );
 

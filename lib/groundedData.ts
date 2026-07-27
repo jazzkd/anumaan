@@ -29,6 +29,44 @@ export type GroundedData = {
   hasHistory: boolean;
 };
 
+/**
+ * What the model is shown.
+ *
+ * Same facts, reshaped: figures carry their units, keys read like English, and
+ * camelCase internals are gone. Handing a model raw serialised state gets you
+ * "a stock of 0.02 against a forecastUsage of 1.235" in the owner's briefing —
+ * technically grounded, visibly a machine reading its own JSON aloud. The
+ * structured object stays for the UI, which wants numbers it can format.
+ */
+export function forPrompt(d: GroundedData) {
+  const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+
+  return {
+    restaurant: d.restaurant,
+    today_date: d.businessDate,
+    yesterday: {
+      date: d.yesterday.date,
+      revenue: inr(d.yesterday.revenue),
+      note: d.yesterday.isSynthetic
+        ? "This history is synthetic demo data, not real trading history."
+        : "Real trading history.",
+    },
+    today_so_far: {
+      revenue: inr(d.today.revenue),
+      orders: d.today.orders,
+    },
+    yesterdays_top_sellers: d.topSellersYesterday.map(
+      (s) => `${s.name}: ${s.qty} sold, ${inr(s.revenue)}`
+    ),
+    todays_forecast: d.forecasts.map(
+      (f) => `${f.name}: ${f.forecastQty} expected (${f.basis})`
+    ),
+    ingredients_at_risk: d.stockouts.map((s) => `${s.name}: ${s.basis}`),
+    items_we_sell: d.itemsOnMenu,
+    has_history: d.hasHistory,
+  };
+}
+
 export async function loadGroundedData(): Promise<GroundedData> {
   const db = createAdminClient();
   const startOfToday = startOfLocalDay();

@@ -1,5 +1,5 @@
 import { requireRole } from "@/lib/auth";
-import { loadGroundedData } from "@/lib/groundedData";
+import { forPrompt, loadGroundedData } from "@/lib/groundedData";
 import { badRequest, ok, readJson, serverError } from "@/lib/http";
 import { complete } from "@/lib/llm";
 import { cannedAnswer } from "@/lib/llm/canned";
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const fallback = cannedAnswer(question, figures);
 
     const result = await complete(
-      { system: ASK_SYSTEM, user: askUser(question, figures) },
+      { system: ASK_SYSTEM, user: askUser(question, forPrompt(figures)) },
       fallback
     );
 

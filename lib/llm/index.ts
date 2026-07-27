@@ -20,6 +20,14 @@ export type CompleteArgs = {
   user: string;
   /** Low by default: this model narrates figures, it does not brainstorm. */
   temperature?: number;
+  /**
+   * Generous by default because Gemini 3.x spends this budget on internal
+   * reasoning before it writes a word — a 400-token cap produced 382 thinking
+   * tokens and 14 of output, which arrived as half a sentence. There is no
+   * supported way to turn that off on this model (`thinkingBudget` and
+   * `thinkingLevel` are both rejected on v1beta), so the budget accommodates
+   * it instead.
+   */
   maxTokens?: number;
 };
 
@@ -81,14 +89,18 @@ export async function complete(
   return { text: cannedFallback, provider: "canned", fellBack: true };
 }
 
-const GEMINI_MODEL = "gemini-2.5-flash";
+// Pinned rather than `gemini-flash-latest`: an alias can rotate underneath a
+// demo, and "it behaved differently this morning" is not a debuggable state at
+// hour 30. Note gemini-2.5-flash now 404s for new API keys — Google retired it
+// for new users, which is exactly the kind of drift the pin protects against.
+const GEMINI_MODEL = "gemini-3.6-flash";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 async function callGemini({
   system,
   user,
   temperature = 0.2,
-  maxTokens = 400,
+  maxTokens = 1600,
 }: CompleteArgs): Promise<string> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
@@ -109,7 +121,15 @@ async function callGemini({
 
   if (!res.ok) throw new Error(`Gemini ${res.status}`);
   const body = await res.json();
-  return body?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+  const candidate = body?.candidates?.[0];
+
+  // A response cut off mid-sentence is worse on stage than a clean failover to
+  // Groq, which does no hidden reasoning and answers well inside the budget.
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw new Error("Gemini response truncated");
+  }
+
+  return candidate?.content?.parts?.[0]?.text?.trim() ?? "";
 }
 
 async function callGroq({
