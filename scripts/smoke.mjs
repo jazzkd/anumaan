@@ -347,6 +347,16 @@ async function propose(req) {
   return r.body ?? {};
 }
 
+// Recreate the at-risk condition this section depends on. The order-lifecycle
+// checks above raise paneer to 5 kg to make the decrement assertion readable,
+// which removes the very stockout the agent is supposed to notice — so the
+// agent had nothing to propose and TRJ-001 failed for a reason that had
+// nothing to do with the agent.
+await call("/api/inventory/1", {
+  method: "PATCH",
+  body: JSON.stringify({ stock: 2.0 }),
+});
+
 // TRJ-001: proposes the right tool and stops at the gate.
 const trj1 = await propose("handle the item that's about to run out");
 const toggle = (trj1.actions ?? []).find(
