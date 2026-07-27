@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "evals": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON evals/run.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
