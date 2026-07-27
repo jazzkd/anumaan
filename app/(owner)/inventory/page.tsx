@@ -5,7 +5,7 @@ import { useT } from "@/lib/i18n";
 import { sendMutation, useLiveData } from "@/lib/useLiveData";
 import type { InventoryItem } from "@/lib/types";
 import { Minus, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Stock levels, and the controls to move them.
@@ -31,27 +31,61 @@ function level(item: InventoryItem) {
 export default function InventoryPage() {
   const { data, error, isLoading, mutate } = useLiveData<InventoryItem[]>("/api/inventory");
   const { t } = useT();
-  const [busy, setBusy] = useState<number | null>(null);
   const [failed, setFailed] = useState<string>();
   const [draft, setDraft] = useState<Record<number, string>>({});
 
-  async function setStock(item: InventoryItem, next: number) {
-    setBusy(item.id);
+  /**
+   * Optimistic, with the write debounced behind it.
+   *
+   * Waiting for a round trip before moving the number made every tap feel
+   * broken — you press +, nothing happens, then it jumps. The displayed value
+   * now changes on the same frame as the click, and the PATCH follows ~350ms
+   * later, so holding + through five taps sends one request rather than five.
+   *
+   * `pending` wins over the polled value until the write lands, otherwise the
+   * 2s refresh would briefly snap the number back to the old figure.
+   */
+  const [pending, setPending] = useState<Record<number, number>>({});
+  const timers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+
+  const stockOf = (item: InventoryItem) =>
+    pending[item.id] ?? Number(item.stock);
+
+  function setStock(item: InventoryItem, next: number) {
+    const value = Math.max(0, Math.round(next * 100) / 100);
     setFailed(undefined);
-    try {
-      await sendMutation(`/api/inventory/${item.id}`, "PATCH", {
-        stock: Math.max(0, Math.round(next * 100) / 100),
-      });
-      await mutate();
-      setDraft((d) => ({ ...d, [item.id]: "" }));
-    } catch (err) {
-      // Previously this failed in silence, which reads exactly like a dead
-      // button.
-      setFailed(`${item.name}: ${(err as Error).message}`);
-    } finally {
-      setBusy(null);
-    }
+    setPending((p) => ({ ...p, [item.id]: value }));
+
+    clearTimeout(timers.current[item.id]);
+    timers.current[item.id] = setTimeout(async () => {
+      try {
+        await sendMutation(`/api/inventory/${item.id}`, "PATCH", { stock: value });
+        await mutate();
+        setPending((p) => {
+          const next = { ...p };
+          delete next[item.id];
+          return next;
+        });
+        setDraft((d) => ({ ...d, [item.id]: "" }));
+      } catch (err) {
+        // Roll back to whatever the server actually holds — a stock figure
+        // that lies is worse than one that refuses to move.
+        setPending((p) => {
+          const next = { ...p };
+          delete next[item.id];
+          return next;
+        });
+        await mutate();
+        setFailed(`${item.name}: ${(err as Error).message}`);
+      }
+    }, 350);
   }
+
+  // Flush anything still queued if the page unmounts mid-edit.
+  useEffect(() => {
+    const t = timers.current;
+    return () => Object.values(t).forEach(clearTimeout);
+  }, []);
 
   return (
     <>
@@ -72,12 +106,10 @@ export default function InventoryPage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mt-3">
         {(data ?? []).map((item) => {
-          const state = level(item);
-          const stock = Number(item.stock);
+          const stock = stockOf(item);
+          const state = level({ ...item, stock });
           const max = Math.max(1, Number(item.max_stock));
           const pct = Math.min(100, Math.round((stock / max) * 100));
-          const working = busy === item.id;
-
           return (
             <div key={item.id} className="card elev-sm">
               <span className="flex items-baseline justify-between gap-2">
@@ -108,7 +140,7 @@ export default function InventoryPage() {
                 <button
                   className="btn btn-icon btn-secondary"
                   aria-label={`Reduce ${item.name} by 0.5${item.unit}`}
-                  disabled={working || stock <= 0}
+                  disabled={stock <= 0}
                   onClick={() => setStock(item, stock - 0.5)}
                 >
                   <Minus size={16} />
@@ -116,7 +148,6 @@ export default function InventoryPage() {
                 <button
                   className="btn btn-icon btn-secondary"
                   aria-label={`Increase ${item.name} by 0.5${item.unit}`}
-                  disabled={working}
                   onClick={() => setStock(item, stock + 0.5)}
                 >
                   <Plus size={16} />
@@ -145,7 +176,7 @@ export default function InventoryPage() {
                 />
                 <button
                   className="btn btn-secondary flex-none"
-                  disabled={working || !draft[item.id]}
+                  disabled={!draft[item.id]}
                   onClick={() => setStock(item, Number(draft[item.id]))}
                 >
                   Set
@@ -155,14 +186,13 @@ export default function InventoryPage() {
               <span className="flex gap-1">
                 <button
                   className="btn btn-secondary flex-1 justify-center"
-                  disabled={working}
                   onClick={() => setStock(item, max)}
                 >
                   Fill
                 </button>
                 <button
                   className="btn btn-secondary flex-1 justify-center"
-                  disabled={working || stock <= 0}
+                  disabled={stock <= 0}
                   onClick={() => setStock(item, 0)}
                 >
                   Empty

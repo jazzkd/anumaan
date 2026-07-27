@@ -58,21 +58,29 @@ function KitchenDisplay() {
 function OrderBoard() {
   const { data, error, isLoading, mutate } = useLiveData<Order[]>("/api/orders");
   const { t } = useT();
-  const [busy, setBusy] = useState<number | null>(null);
   const [actionError, setActionError] = useState<Error>();
 
+  // Optimistic. A kitchen tablet tap that waits on a round trip before the
+  // card moves reads as a missed tap, and the cook taps again — which is how
+  // an order jumps two columns. The board updates immediately and reconciles
+  // with the server behind it.
   async function advance(order: Order) {
     const next = nextStatus(order.status);
     if (!next) return;
-    setBusy(order.id);
     setActionError(undefined);
+
+    mutate(
+      (current) =>
+        (current ?? []).map((o) => (o.id === order.id ? { ...o, status: next } : o)),
+      { revalidate: false }
+    );
+
     try {
       await sendMutation(`/api/orders/${order.id}`, "PATCH", { status: next });
       await mutate();
     } catch (err) {
       setActionError(err as Error);
-    } finally {
-      setBusy(null);
+      await mutate(); // snap back to what the server actually holds
     }
   }
 
@@ -100,7 +108,7 @@ function OrderBoard() {
                       className={`card elev-sm text-left ${
                         done ? "opacity-55 cursor-default" : "cursor-pointer"
                       }`}
-                      disabled={done || busy === order.id}
+                      disabled={done}
                       onClick={() => advance(order)}
                     >
                       <span className="card-kicker">
@@ -139,8 +147,19 @@ function TableBoard() {
   async function cycle(table: RestaurantTable) {
     const i = TABLE_CYCLE.indexOf(table.status);
     const next = TABLE_CYCLE[(i + 1) % TABLE_CYCLE.length];
-    await sendMutation(`/api/tables/${table.id}`, "PATCH", { status: next });
-    await mutate();
+
+    mutate(
+      (current) =>
+        (current ?? []).map((x) => (x.id === table.id ? { ...x, status: next } : x)),
+      { revalidate: false }
+    );
+
+    try {
+      await sendMutation(`/api/tables/${table.id}`, "PATCH", { status: next });
+      await mutate();
+    } catch {
+      await mutate();
+    }
   }
 
   return (
@@ -168,17 +187,21 @@ function TableBoard() {
 function AvailabilityGrid() {
   const { data, error, mutate } = useLiveData<MenuItem[]>("/api/menu");
   const { t } = useT();
-  const [busy, setBusy] = useState<number | null>(null);
 
   async function toggle(item: MenuItem) {
-    setBusy(item.id);
+    const next = !item.available;
+
+    mutate(
+      (current) =>
+        (current ?? []).map((m) => (m.id === item.id ? { ...m, available: next } : m)),
+      { revalidate: false }
+    );
+
     try {
-      await sendMutation(`/api/menu/${item.id}`, "PATCH", {
-        available: !item.available,
-      });
+      await sendMutation(`/api/menu/${item.id}`, "PATCH", { available: next });
       await mutate();
-    } finally {
-      setBusy(null);
+    } catch {
+      await mutate();
     }
   }
 
@@ -201,7 +224,6 @@ function AvailabilityGrid() {
               <td className="text-right">
                 <button
                   className={`btn ${item.available ? "btn-secondary" : "btn-primary"}`}
-                  disabled={busy === item.id}
                   onClick={() => toggle(item)}
                 >
                   {item.available ? t("mark86") : t("markAvailable")}
