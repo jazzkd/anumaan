@@ -34,7 +34,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: "toggle_item_availability",
     description:
-      "Mark a menu item as sold out (86'd) or available again. Use when an ingredient is about to run out, or when stock has been replenished.",
+      "Mark a menu item as sold out, or put it back on sale. Use when an ingredient is about to run out, or when stock has been replenished.",
     parameters: {
       type: "object",
       properties: {
@@ -53,8 +53,8 @@ export const TOOLS: ToolDef[] = [
     },
     summarise: (a) =>
       a.available
-        ? `Mark menu item ${a.menu_item_id} available again`
-        : `86 menu item ${a.menu_item_id} (mark sold out)`,
+        ? `Put menu item ${a.menu_item_id} back on the menu`
+        : `Take menu item ${a.menu_item_id} off the menu (mark sold out)`,
   },
   {
     name: "notify_queue_entry",

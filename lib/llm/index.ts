@@ -128,25 +128,41 @@ export async function callWithTools(args: {
   }
 
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        temperature: args.temperature ?? 0.1,
-        max_tokens: 900,
-        tools: args.tools,
-        tool_choice: "auto",
-        messages: [
-          { role: "system", content: args.system },
-          { role: "user", content: args.user },
-        ],
-      }),
-      signal: AbortSignal.timeout(15_000),
-    });
+    let res!: Response;
+
+    // Groq allows 12k tokens per minute, which a few agent calls in quick
+    // succession will exceed. A 429 is a "wait a moment", not a failure, and
+    // treating it as one dropped every request onto the fallback path.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          temperature: args.temperature ?? 0.1,
+          max_tokens: 900,
+          tools: args.tools,
+          tool_choice: "auto",
+          messages: [
+            { role: "system", content: args.system },
+            { role: "user", content: args.user },
+          ],
+        }),
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (res.status !== 429) break;
+
+      // Groq tells us how long to wait; believe it, within reason.
+      const retryAfter = Number(res.headers.get("retry-after"));
+      const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 6000)
+        : 1200 * (attempt + 1);
+      await new Promise((r) => setTimeout(r, waitMs));
+    }
 
     if (!res.ok) throw new Error(`Groq ${res.status}`);
     const body = await res.json();
@@ -175,7 +191,16 @@ export async function callWithTools(args: {
       provider: "groq",
       offline: false,
     };
-  } catch {
+  } catch (err) {
+    // Never silent. A swallowed failure here drops every request onto the
+    // deterministic fallback, which answers with the at-risk dish no matter
+    // what was asked — so the agent looks like it works while ignoring the
+    // question. That is far worse than an error, and it is exactly what this
+    // empty catch block hid.
+    console.warn(
+      "[llm] tool-calling failed, falling back to the deterministic path:",
+      err instanceof Error ? err.message : err
+    );
     return { toolCalls: [], text: "", provider: "canned", offline: true };
   }
 }

@@ -12,7 +12,8 @@
     "evals": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON evals/run.mjs",
     "deck": "node -e \"const{execSync}=require('child_process');const p=require('path').resolve('submission/deck.html');execSync(process.platform==='win32'?`start \\\"\\\" \\\"${p}\\\"`:`open \\\"${p}\\\"`,{shell:true})\"",
     "pptx": "node scripts/make-pptx.mjs",
-    "pptx:check": "node scripts/check-pptx.mjs"
+    "pptx:check": "node scripts/check-pptx.mjs",
+    "scenarios": "node scripts/agent-scenarios.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",

@@ -23,8 +23,15 @@ export type GroundedData = {
   today: { revenue: number; orders: number };
   yesterday: { date: string; revenue: number; isSynthetic: boolean };
   topSellersYesterday: { name: string; qty: number; revenue: number }[];
+  /** Every item with history, not a top-N slice. Callers truncate for display;
+   *  the agent needs the whole menu or it cannot answer about the other seven
+   *  dishes a judge might name. */
   forecasts: (ItemForecast & { name: string })[];
+  /** Only ingredients needing attention — this drives the risk cards. */
   stockouts: StockoutRisk[];
+  /** All tracked ingredients, healthy ones included, so "how much rice is
+   *  left?" is answerable and not just "which are we short of?". */
+  ingredients: StockoutRisk[];
   itemsOnMenu: string[];
   hasHistory: boolean;
 };
@@ -60,6 +67,9 @@ export function forPrompt(d: GroundedData) {
     ),
     todays_forecast: d.forecasts.map(
       (f) => `${f.name}: ${f.forecastQty} expected (${f.basis})`
+    ),
+    ingredient_stock: d.ingredients.map(
+      (s) => `${s.name}: ${s.basis} — ${s.level}`
     ),
     ingredients_at_risk: d.stockouts.map((s) => `${s.name}: ${s.basis}`),
     items_we_sell: d.itemsOnMenu,
@@ -128,15 +138,16 @@ export async function loadGroundedData(): Promise<GroundedData> {
     }
   }
 
-  const stockouts = (inventoryRes.data ?? [])
+  const ingredients = (inventoryRes.data ?? [])
     .map((item) =>
       stockoutRisk(
         item,
         gramsToStockUnits(usageByIngredient.get(item.id) ?? 0)
       )
     )
-    .filter((r) => r.level !== "ok")
     .sort((a, b) => b.shortfall - a.shortfall);
+
+  const stockouts = ingredients.filter((r) => r.level !== "ok");
 
   return {
     restaurant: restaurantRes.data?.name ?? "the restaurant",
@@ -158,8 +169,9 @@ export async function loadGroundedData(): Promise<GroundedData> {
       }))
       .sort((a, b) => b.qty - a.qty)
       .slice(0, 5),
-    forecasts: forecasts.slice(0, 5),
+    forecasts,
     stockouts,
+    ingredients,
     // Named explicitly so the model can tell "we don't sell that" from
     // "we sold none yesterday" — the distinction GND-003 turns on.
     itemsOnMenu: menu.map((m) => m.name),
