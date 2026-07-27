@@ -36,17 +36,23 @@ export default function AgentsPage() {
   const [running, setRunning] = useState<string | null>(null);
   const [note, setNote] = useState<string>();
 
-  async function run(kind: "compliance" | "prep") {
+  async function run(kind: "compliance" | "prep" | "reset") {
     setRunning(kind);
     setNote(undefined);
     try {
-      const res = await sendMutation<{ message: string }>(
+      const path =
         kind === "compliance"
           ? "/api/agents/compliance?force=1"
-          : "/api/agents/prep",
+          : kind === "prep"
+            ? "/api/agents/prep"
+            : "/api/demo/reset";
+      const res = await sendMutation<{ message?: string; reset?: string[] }>(
+        path,
         "POST"
       );
-      setNote(res.message);
+      setNote(
+        res.message ?? `Restored: ${(res.reset ?? []).join(", ")}.`
+      );
       await mutate();
     } catch (err) {
       setNote((err as Error).message);
@@ -79,6 +85,14 @@ export default function AgentsPage() {
           onClick={() => run("prep")}
         >
           {running === "prep" ? "…" : "Draft today's prep checklist"}
+        </button>
+        <button
+          className="btn btn-ghost ml-auto"
+          disabled={running !== null}
+          onClick={() => run("reset")}
+          title="Restore seeded demo state before another run-through"
+        >
+          {running === "reset" ? "…" : "Reset demo data"}
         </button>
       </div>
 
