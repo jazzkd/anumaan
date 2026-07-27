@@ -21,7 +21,15 @@ export default function BriefingPage() {
   // should not have to reload to find out.
   const { data: actions, mutate: mutateActions } =
     useLiveData<AgentAction[]>("/api/agents/actions");
-  const pending = (actions ?? []).filter((a) => a.status === "proposed");
+
+  // Anything decided in this session stays on screen with its result. The
+  // pending filter alone removed a card the instant Approve was pressed —
+  // which deleted the confirmation at the exact moment someone was looking for
+  // it, and on stage read as though the click had failed.
+  const [decided, setDecided] = useState<AgentAction[]>([]);
+  const pending = (actions ?? []).filter(
+    (a) => a.status === "proposed" && !decided.some((d) => d.id === a.id)
+  );
 
   const { t } = useT();
   const [rewriting, setRewriting] = useState(false);
@@ -83,23 +91,46 @@ export default function BriefingPage() {
 
           {/* Anything an agent raised on its own, at the top where it will be
               seen. A warning the owner has to go looking for is not a warning. */}
-          {pending.length > 0 ? (
+          {pending.length > 0 || decided.length > 0 ? (
             <section className="mb-5">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="tag tag-accent">
-                  {pending.length} awaiting your approval
-                </span>
-                <span className="text-[12px] text-muted">
-                  raised automatically — nothing has happened yet
-                </span>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {pending.length > 0 ? (
+                  <>
+                    <span className="tag tag-accent">
+                      {pending.length} awaiting your approval
+                    </span>
+                    <span className="text-[12px] text-muted">
+                      raised automatically — nothing has happened yet
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[12px] text-muted">
+                    Nothing awaiting approval.
+                  </span>
+                )}
+                {decided.length > 0 ? (
+                  <button
+                    className="btn btn-ghost ml-auto text-[12px]"
+                    onClick={() => setDecided([])}
+                  >
+                    Clear decided
+                  </button>
+                ) : null}
               </div>
+
               <div className="flex flex-col gap-3">
                 {pending.map((action) => (
                   <ProposalCard
                     key={action.id}
                     action={action}
-                    onDecided={() => mutateActions()}
+                    onDecided={(updated) => {
+                      setDecided((prev) => [updated, ...prev]);
+                      mutateActions();
+                    }}
                   />
+                ))}
+                {decided.map((action) => (
+                  <ProposalCard key={`done-${action.id}`} action={action} />
                 ))}
               </div>
             </section>
