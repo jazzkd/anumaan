@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/auth";
 import { RESTAURANT_ID } from "@/lib/constants";
 import { businessDateOffset } from "@/lib/dates";
+import { ensureFreshHistory } from "@/lib/demoHistory";
 import { fromSupabase, ok } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -24,6 +25,10 @@ export async function GET() {
   if (!guard.ok) return guard.response;
 
   const db = createAdminClient();
+
+  // See lib/demoHistory.ts — the seeded window heals itself on read.
+  await ensureFreshHistory(db);
+
   const monthAgo = businessDateOffset(-30);
   const weekAgo = businessDateOffset(-7);
   const today = businessDateOffset(0);

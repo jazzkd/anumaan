@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/auth";
 import { RESTAURANT_ID } from "@/lib/constants";
 import { businessDateOffset, startOfLocalDay } from "@/lib/dates";
+import { ensureFreshHistory } from "@/lib/demoHistory";
 import { fromSupabase, ok } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -27,6 +28,10 @@ export async function GET() {
 
   const db = createAdminClient();
   const startOfToday = startOfLocalDay();
+
+  // Before reading, not after: the seeded window expires on a UTC rollover and
+  // nobody presses reset during a judged demo. See lib/demoHistory.ts.
+  await ensureFreshHistory(db);
 
   const [ordersRes, historyRes, inventoryRes] = await Promise.all([
     db

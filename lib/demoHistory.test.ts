@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { synthesizeHistory } from "./demoHistory";
+import { needsHeal, synthesizeHistory } from "./demoHistory";
 import { businessDateOffset } from "./dates";
 
 /** Seeded menu prices — the ones yesterday's ₹18,400 is authored against. */
@@ -64,5 +64,54 @@ describe("demo sales history", () => {
     const rows = synthesizeHistory(new Map([[9, 60]]), new Date("2026-07-29T12:00:00"));
     expect(rows.every((r) => Number.isFinite(r.revenue))).toBe(true);
     expect(new Set(rows.map((r) => r.menu_item_id))).toEqual(new Set([9]));
+  });
+});
+
+/**
+ * The read-path guard. What it *declines* to do matters more than what it does:
+ * it is a write triggered by a GET, so the two cases below are the ones that
+ * would turn demo scaffolding into data loss on someone's real restaurant.
+ */
+describe("needsHeal", () => {
+  const now = new Date("2026-07-29T12:00:00");
+  const yesterday = businessDateOffset(-1, now);
+
+  it("heals synthetic history that has fallen behind yesterday", () => {
+    expect(needsHeal({ business_date: "2026-07-20", is_synthetic: true }, now)).toBe(true);
+  });
+
+  it("leaves a window that still ends yesterday alone", () => {
+    expect(needsHeal({ business_date: yesterday, is_synthetic: true }, now)).toBe(false);
+  });
+
+  it("never touches real trading history, however stale", () => {
+    expect(needsHeal({ business_date: "2020-01-01", is_synthetic: false }, now)).toBe(false);
+  });
+
+  it("leaves an empty history empty — no history is an honest state (FR-P6)", () => {
+    expect(needsHeal(null, now)).toBe(false);
+    expect(needsHeal(undefined, now)).toBe(false);
+  });
+
+  it("does not fire on a window running ahead of yesterday", () => {
+    const today = businessDateOffset(0, now);
+    expect(needsHeal({ business_date: today, is_synthetic: true }, now)).toBe(false);
+  });
+
+  it("regenerates to a window that immediately satisfies itself", () => {
+    // Whatever day it heals on, the result must not ask to be healed again —
+    // otherwise every read rewrites the table.
+    for (let i = 0; i < 371; i++) {
+      const from = new Date("2026-01-01T12:00:00");
+      from.setDate(from.getDate() + i);
+      const newest = synthesizeHistory(PRICES, from)
+        .map((r) => r.business_date)
+        .sort()
+        .at(-1)!;
+      expect(
+        needsHeal({ business_date: newest, is_synthetic: true }, from),
+        `healed on ${from.toDateString()}`
+      ).toBe(false);
+    }
   });
 });

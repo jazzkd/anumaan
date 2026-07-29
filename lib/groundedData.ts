@@ -1,5 +1,6 @@
 import { RESTAURANT_ID } from "./constants";
 import { businessDate, businessDateOffset, startOfLocalDay } from "./dates";
+import { ensureFreshHistory } from "./demoHistory";
 import {
   forecastForItem,
   stockoutRisk,
@@ -83,6 +84,11 @@ export async function loadGroundedData(): Promise<GroundedData> {
   const todayKey = businessDate();
   const yKey = businessDateOffset(-1);
   const weekday = new Date().getDay();
+
+  // The briefing and Ask Anumaan both read through here, so healing the seeded
+  // window once at this point covers every grounded feature. Must happen before
+  // the reads below, or the model narrates the decayed figures.
+  await ensureFreshHistory(db);
 
   const [menuRes, ordersRes, historyRes, inventoryRes, restaurantRes] =
     await Promise.all([

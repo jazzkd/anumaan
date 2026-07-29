@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { RESTAURANT_ID } from "./constants";
 import { businessDateOffset } from "./dates";
 
 /**
@@ -111,4 +113,111 @@ export function synthesizeHistory(
   }
 
   return rows;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Self-healing.
+
+   Rolling the window inside `/api/demo/reset` fixed the decay for whoever
+   remembers to press reset. Judges do not press reset — they open the URL.
+   Vercel runs UTC while the demo is narrated in IST, so the window can expire
+   between the rehearsal and the judging with nobody having touched anything,
+   and the first thing a judge would see is a Daily Briefing reporting ₹0.
+
+   So the repair moved onto the read path: every handler that reads history
+   checks first, and regenerates only if the window has actually decayed.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/** The two columns the staleness test needs, as the readers select them. */
+export type HistoryStamp = { business_date: string; is_synthetic: boolean };
+
+/**
+ * Whether the seeded window has decayed, judged from the newest row alone.
+ *
+ * Deliberately narrow on both sides. No history at all is a legitimate state —
+ * FR-P6 says a restaurant with no sales gets no forecast and is told so, and
+ * fabricating a month of trading to avoid an empty screen would be exactly the
+ * dishonesty the rest of this product refuses. And if the newest row is *real*,
+ * this is a live restaurant rather than the demo seed, so it is never touched.
+ * Only synthetic history that has fallen behind yesterday gets regenerated.
+ *
+ * ISO dates compare correctly as strings, which is why `business_date` is
+ * stored and compared in that form throughout.
+ */
+export function needsHeal(
+  newest: HistoryStamp | null | undefined,
+  from: Date = new Date()
+): boolean {
+  if (!newest) return false;
+  if (!newest.is_synthetic) return false;
+  return newest.business_date < businessDateOffset(-1, from);
+}
+
+/**
+ * Regenerate the window if it has decayed. Returns whether it did.
+ *
+ * Costs one indexed single-row query in the overwhelmingly common case where
+ * nothing is wrong. The write is an upsert on
+ * `(restaurant_id, menu_item_id, business_date)` rather than a delete-then-
+ * insert, so two requests arriving in the same second after a rollover cannot
+ * race each other into a half-empty table — the worst case is that both write
+ * identical rows.
+ *
+ * A failure here never fails the request it was protecting: serving a briefing
+ * from a stale window is bad, serving no briefing at all is worse, and this is
+ * demo scaffolding rather than a figure anyone is asked to trust.
+ */
+export async function ensureFreshHistory(
+  db: SupabaseClient,
+  from: Date = new Date()
+): Promise<boolean> {
+  try {
+    const { data, error } = await db
+      .from("daily_summaries")
+      .select("business_date, is_synthetic")
+      .eq("restaurant_id", RESTAURANT_ID)
+      .order("business_date", { ascending: false })
+      .limit(1);
+    if (error) throw new Error(error.message);
+    if (!needsHeal(data?.[0] as HistoryStamp | undefined, from)) return false;
+
+    // Prices come from the menu, not a constant: yesterday's ₹18,400 is
+    // quantities × the seeded prices, so a repriced item must move the figure
+    // rather than silently disagree with the menu the briefing cites.
+    const { data: menu, error: menuError } = await db
+      .from("menu_items")
+      .select("id, price")
+      .eq("restaurant_id", RESTAURANT_ID);
+    if (menuError) throw new Error(menuError.message);
+
+    const prices = new Map<number, number>(
+      (menu ?? []).map((m) => [m.id as number, Number(m.price)])
+    );
+    const rows = synthesizeHistory(prices, from).map((row) => ({
+      ...row,
+      restaurant_id: RESTAURANT_ID,
+    }));
+
+    const { error: upsertError } = await db
+      .from("daily_summaries")
+      .upsert(rows, { onConflict: "restaurant_id,menu_item_id,business_date" });
+    if (upsertError) throw new Error(upsertError.message);
+
+    // Days that fell out of the back of the window, or the table grows without
+    // bound across a long-lived demo. Synthetic rows only.
+    await db
+      .from("daily_summaries")
+      .delete()
+      .eq("restaurant_id", RESTAURANT_ID)
+      .eq("is_synthetic", true)
+      .lt("business_date", businessDateOffset(-28, from));
+
+    return true;
+  } catch (err) {
+    console.warn(
+      "[demoHistory] could not refresh the seeded window:",
+      err instanceof Error ? err.message : err
+    );
+    return false;
+  }
 }
