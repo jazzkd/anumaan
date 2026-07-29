@@ -41,17 +41,17 @@ export default function ItemDetail({
               src={dishImage(item.id) ?? "/menu/placeholder.svg"}
               alt={item.name}
               width={900}
-              height={420}
+              height={560}
               priority
-              className="w-full h-[220px] object-cover border border-[var(--color-divider)] bg-surface"
+              className="w-full h-[280px] object-cover rounded-2xl bg-surface"
             />
 
-            <div className="flex items-center gap-2 mt-4">
+            <div className="flex items-center gap-2 mt-5">
               <VegMark veg={item.veg} />
               <h3 className="m-0">{item.name}</h3>
             </div>
 
-            <p className="font-[var(--font-heading)] font-extrabold text-[20px] mt-1 mb-2">
+            <p className="font-[var(--font-heading)] font-extrabold text-[26px] text-accent mt-1 mb-2">
               {inr(item.price)}
             </p>
 

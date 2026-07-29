@@ -102,7 +102,7 @@ export default function CartPage() {
             ) : null}
 
             <button
-              className="btn btn-primary w-full justify-center mt-4"
+              className="btn btn-primary btn-cta w-full justify-center mt-4"
               onClick={confirm}
               disabled={submitting || priced.length === 0}
             >

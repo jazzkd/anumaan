@@ -83,6 +83,15 @@ export const EN = {
   orderPlaced: "Order placed",
   category: "Category",
   price: "Price",
+  // Menu masthead. Split in two so the second clause can carry the accent
+  // colour without a component hard-coding a slice of a translated string.
+  heroTitle: "Every dish,",
+  heroTitleAccent: "fresh from the pass",
+  heroNoApp: "No app to install",
+  heroLive: "Live availability",
+  heroTrack: "Track your order",
+  dish: "dish",
+  dishes: "dishes",
 } as const;
 
 export type StringId = keyof typeof EN;
@@ -154,6 +163,13 @@ export const HI: Partial<Record<StringId, string>> = {
   orderPlaced: "ऑर्डर दर्ज हुआ",
   category: "श्रेणी",
   price: "दाम",
+  heroTitle: "हर व्यंजन,",
+  heroTitleAccent: "सीधे रसोई से",
+  heroNoApp: "कोई ऐप नहीं",
+  heroLive: "लाइव उपलब्धता",
+  heroTrack: "ऑर्डर ट्रैक करें",
+  dish: "व्यंजन",
+  dishes: "व्यंजन",
 };
 
 export type Lang = "en" | "hi";

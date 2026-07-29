@@ -13,7 +13,9 @@ export function CustomerHeader({ back }: { back?: { href: string; label?: string
   const { t } = useT();
 
   return (
-    <header className="sticky top-0 z-10 bg-ground border-b-2 border-[var(--color-divider)]">
+    // dining-nav makes it translucent and blurred, so the dish photography
+    // scrolls under the header rather than stopping at a hard bar.
+    <header className="dining-nav sticky top-0 z-10 bg-ground">
       <div className="flex items-center gap-3 px-4 py-3">
         {back ? (
           <Link href={back.href} className="btn btn-ghost no-underline -ml-1">
@@ -42,7 +44,7 @@ export function CustomerHeader({ back }: { back?: { href: string; label?: string
             <ShoppingCart size={18} />
             {count > 0 && (
               <span
-                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 grid place-items-center text-[11px] font-bold text-ground bg-accent"
+                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 grid place-items-center rounded-full text-[11px] font-bold text-ground bg-accent"
                 aria-hidden
               >
                 {count}

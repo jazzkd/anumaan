@@ -11,6 +11,7 @@ import type { MenuItem } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Clock, Radio, Search, Smartphone } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
 type Filter = "all" | "veg" | "nonveg";
@@ -57,21 +58,48 @@ function MenuHome() {
 
       <div className="dining-hero">
         <span className="eyebrow">Spice Route Kitchen</span>
-        <h2>{t("menuHome")}</h2>
+        {/* Two clauses, two spans: the accent lands on the second without any
+            component slicing a translated string in half. */}
+        <h2>
+          {t("heroTitle")} <em>{t("heroTitleAccent")}</em>
+        </h2>
         <p className="text-muted text-[13px] m-0">
           {tableId ? `${t("table")} ${tableId} · ` : ""}Order from your phone —
           no app, no waiting for a server.
         </p>
+
+        {/* Three claims the product actually delivers, not decoration. */}
+        <ul className="hero-points">
+          <li>
+            <Smartphone size={14} />
+            {t("heroNoApp")}
+          </li>
+          <li>
+            <Radio size={14} />
+            {t("heroLive")}
+          </li>
+          <li>
+            <Clock size={14} />
+            {t("heroTrack")}
+          </li>
+        </ul>
       </div>
 
       <div className="px-4 py-4 flex flex-col gap-3">
-        <input
-          className="input"
-          placeholder={t("search")}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label={t("search")}
-        />
+        <div className="relative">
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50"
+            aria-hidden
+          />
+          <input
+            className="input pl-11"
+            placeholder={t("search")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label={t("search")}
+          />
+        </div>
 
         <div className="seg self-start" role="group" aria-label={t("all")}>
           {(["all", "veg", "nonveg"] as Filter[]).map((f) => (
@@ -96,6 +124,9 @@ function MenuHome() {
           <section key={category}>
             <div className="dining-section">
               <h5>{category}</h5>
+              <span className="dining-section-meta">
+                {items.length} {t(items.length === 1 ? "dish" : "dishes")}
+              </span>
             </div>
 
             <ul className="list-none p-0 m-0 grid grid-cols-2 gap-3">
@@ -115,13 +146,12 @@ function MenuHome() {
                       src={dishImage(item.id) ?? "/menu/placeholder.svg"}
                       alt=""
                       width={400}
-                      height={300}
+                      height={400}
                       className="w-full h-full object-cover"
                     />
                     <span className="dish-badge">
                       <VegMark veg={item.veg} />
                     </span>
-                    <span className="dish-price">{inr(item.price)}</span>
                   </Link>
 
                   <div className="dish-body">
@@ -135,7 +165,11 @@ function MenuHome() {
                     {item.description ? (
                       <p className="dish-desc m-0">{item.description}</p>
                     ) : null}
-                    <div className="mt-auto pt-1">
+                    {/* Price and action share the footer. The reference puts
+                        both under the plate rather than stamping the price
+                        over the corner of the photograph. */}
+                    <div className="dish-foot">
+                      <span className="dish-price">{inr(item.price)}</span>
                       <QtyStepper item={item} />
                     </div>
                   </div>

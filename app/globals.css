@@ -312,8 +312,9 @@ textarea.input { min-height: 90px; resize: vertical; }
    "Dining" — the customer surface only.
 
    Visual direction taken from a fine-dining reference the client shared:
-   dark warm ground, image-forward cards, uppercase letterspaced section
-   headers, generous spacing. Written from scratch against our own tokens —
+   near-black ground, warm orange accent, image-forward cards on generous
+   radii, pill controls, and big quiet display headings over the old
+   letterspaced micro-labels. Written from scratch against our own tokens —
    no third-party CSS or assets are used, so there is no licence or
    attribution to carry.
 
@@ -328,14 +329,40 @@ textarea.input { min-height: 90px; resize: vertical; }
      compiles `bg-ground` to `var(--color-ground)`, so redefining them here is
      what carries the palette into every utility class on this surface. Miss
      these and the cart, queue and bill screens stay stubbornly light. */
-  --color-ground: #14110f;
-  --color-surface: #1f1a17;
-  --color-ink: #f4efe9;
+  --color-ground: #0f0d0c;
+  --color-surface: #191614;
+  --color-ink: #f6f2ec;
 
-  --color-bg: #14110f;
-  --color-text: #f4efe9;
-  --color-divider: rgba(244, 239, 233, 0.18);
-  --color-gold: #c9a227;
+  --color-bg: #0f0d0c;
+  --color-text: #f6f2ec;
+  --color-divider: rgba(246, 242, 236, 0.1);
+  --color-gold: #e2b177;
+
+  /* Raised surface for anything sitting on top of a card. */
+  --color-surface-2: #221d1a;
+  --color-hairline: rgba(246, 242, 236, 0.08);
+
+  /* Warm orange, not the Modernist red. On a near-black ground the red reads
+     as a warning; the orange reads as appetite, which is the whole job here. */
+  --color-accent: #f2701d;
+  --color-accent-600: #d95c0c;
+  --color-accent-700: #b34a09;
+  /* .tag-accent pairs these two. The light-ground pair is unreadable here. */
+  --color-accent-100: rgba(242, 112, 29, 0.16);
+  --color-accent-800: #ffbd8c;
+  --color-accent-2-100: rgba(226, 177, 119, 0.16);
+  --color-accent-2-800: #f0cfa8;
+
+  /* Radius 0 is the Modernist system's signature and it stays that way on the
+     staff and owner surfaces. The dining reference is built on soft corners,
+     so the scale is re-pointed here and every utility inside follows. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 26px;
+  --radius-full: 999px;
+  --radius-pill: 999px;
 
   background: var(--color-bg);
   color: var(--color-text);
@@ -346,44 +373,63 @@ textarea.input { min-height: 90px; resize: vertical; }
 [data-theme="dining"] .text-ground { color: #fff; }
 
 [data-theme="dining"] .text-muted {
-  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
 }
 
-/* Section headers: uppercase, letterspaced, with a hairline rule that stops
-   at the text rather than running the full width. */
+/* — section headers —
+   The reference leads each block with a large quiet heading and parks the
+   supporting detail on the right. Same idea, phone-sized: the category name
+   carries the weight, the dish count sits beside it, a hairline closes it. */
 [data-theme="dining"] .dining-section {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: space-between;
   gap: var(--space-3);
-  margin: var(--space-6) 0 var(--space-3);
+  margin: var(--space-8) 0 var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-hairline);
 }
 [data-theme="dining"] .dining-section h5 {
   margin: 0;
-  font-size: 13px;
-  letter-spacing: 0.18em;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--color-text);
+}
+[data-theme="dining"] .dining-section-meta {
+  flex: none;
+  font-size: 11px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-gold);
-  white-space: nowrap;
-}
-[data-theme="dining"] .dining-section::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--color-divider);
 }
 
-/* Image-forward dish card. The photograph does the selling; the type stays
-   quiet underneath it. */
+/* — dish card —
+   The photograph does the selling. Card and image both take a radius, the
+   card lifts on hover, and price and action share the footer row rather than
+   the price being stamped over the corner of the photo. */
 [data-theme="dining"] .dish {
   display: flex;
   flex-direction: column;
+  padding: 10px;
   background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-xl);
   overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease;
+}
+[data-theme="dining"] .dish:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
 }
 [data-theme="dining"] .dish-media {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
+  border-radius: var(--radius-lg);
   background: #241e1a;
 }
 [data-theme="dining"] .dish-media img {
@@ -392,34 +438,33 @@ textarea.input { min-height: 90px; resize: vertical; }
   object-fit: cover;
   transition: transform 0.45s ease;
 }
-[data-theme="dining"] .dish:hover .dish-media img { transform: scale(1.05); }
-[data-theme="dining"] .dish-sold .dish-media img { filter: grayscale(1) brightness(0.6); }
+[data-theme="dining"] .dish:hover .dish-media img { transform: scale(1.06); }
+[data-theme="dining"] .dish-sold .dish-media img { filter: grayscale(1) brightness(0.55); }
+[data-theme="dining"] .dish-sold:hover { transform: none; }
 
 [data-theme="dining"] .dish-badge {
   position: absolute;
   top: 8px;
   left: 8px;
-  background: rgba(20, 17, 15, 0.82);
-  padding: 4px 7px;
   display: inline-flex;
   align-items: center;
+  padding: 5px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 13, 12, 0.78);
+  backdrop-filter: blur(6px);
 }
 [data-theme="dining"] .dish-price {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  background: var(--color-accent);
-  color: #fff;
   font-family: var(--font-heading);
   font-weight: var(--font-heading-weight);
-  font-size: 15px;
-  padding: 5px 10px;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 [data-theme="dining"] .dish-body {
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-2) var(--space-1);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 6px;
   flex: 1;
 }
 [data-theme="dining"] .dish-name {
@@ -431,54 +476,224 @@ textarea.input { min-height: 90px; resize: vertical; }
 [data-theme="dining"] .dish-desc {
   font-size: 12px;
   line-height: 1.45;
-  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  color: color-mix(in srgb, var(--color-text) 52%, transparent);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+[data-theme="dining"] .dish-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Wraps rather than overflows: two cards to a row leaves ~220px, and the
+     Hindi "कार्ट में जोड़ें" is wider than the English label. */
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+[data-theme="dining"] .dish-foot .btn {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+[data-theme="dining"] .dish-foot .stepper button {
+  width: 30px;
+  height: 30px;
+}
 
-/* The masthead a diner lands on after scanning. */
+/* — masthead —
+   Display type with the second clause in the accent, then three claims the
+   product actually delivers. The wash keeps the top of the screen from
+   reading as flat black. */
 [data-theme="dining"] .dining-hero {
-  padding: var(--space-6) var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--color-divider);
+  position: relative;
+  padding: var(--space-8) var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-hairline);
+  background:
+    radial-gradient(
+      120% 90% at 12% 0%,
+      color-mix(in srgb, var(--color-accent) 18%, transparent) 0%,
+      transparent 62%
+    ),
+    var(--color-bg);
 }
 [data-theme="dining"] .dining-hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--color-gold);
 }
+[data-theme="dining"] .dining-hero .eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+}
 [data-theme="dining"] .dining-hero h2 {
-  margin: 6px 0 2px;
-  font-size: 30px;
+  margin: 12px 0 6px;
+  font-size: 38px;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+}
+[data-theme="dining"] .dining-hero h2 em {
+  font-style: normal;
+  color: var(--color-accent);
+}
+[data-theme="dining"] .hero-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: var(--space-4) 0 0;
+}
+[data-theme="dining"] .hero-points li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px 6px 8px;
+  font-size: 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface);
+}
+[data-theme="dining"] .hero-points svg {
+  color: var(--color-accent);
+  flex: none;
 }
 
-/* Form controls have to be re-tuned for the dark ground. */
-[data-theme="dining"] .input {
-  background: var(--color-surface);
+/* — controls —
+   Every control on this surface is a pill. Buttons carry a little more
+   padding than the Modernist default because they are being tapped with a
+   thumb, not clicked with a mouse. */
+[data-theme="dining"] .btn {
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+[data-theme="dining"] .btn:active { transform: scale(0.985); }
+[data-theme="dining"] .btn-primary {
+  color: #fff;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-accent) 26%, transparent);
+}
+[data-theme="dining"] .btn-secondary {
   border-color: var(--color-divider);
+  background: var(--color-surface);
+}
+[data-theme="dining"] .btn-secondary:hover {
+  background: var(--color-surface-2);
+  border-color: color-mix(in srgb, var(--color-text) 22%, transparent);
+}
+[data-theme="dining"] .btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+/* The reference ends its calls to action with a circled arrow. It reads as
+   "this goes somewhere", which is exactly what a confirm button is. */
+[data-theme="dining"] .btn-cta::after {
+  content: "↗";
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+[data-theme="dining"] .input {
+  min-height: 44px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border-color: var(--color-hairline);
+  border-radius: var(--radius-pill);
   color: var(--color-text);
 }
+[data-theme="dining"] textarea.input { border-radius: var(--radius-lg); }
 [data-theme="dining"] .input::placeholder {
   color: color-mix(in srgb, var(--color-text) 40%, transparent);
 }
-[data-theme="dining"] .seg { border-color: var(--color-divider); }
-[data-theme="dining"] .seg-opt + .seg-opt { border-left-color: var(--color-divider); }
+[data-theme="dining"] .input:hover { border-color: color-mix(in srgb, var(--color-text) 25%, transparent); }
+
+/* Segmented control as a track of pills, the way the reference draws its nav. */
+[data-theme="dining"] .seg {
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-surface);
+  border-color: var(--color-hairline);
+  border-radius: var(--radius-pill);
+}
+[data-theme="dining"] .seg-opt {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+}
+[data-theme="dining"] .seg-opt + .seg-opt { border-left: 0; }
+[data-theme="dining"] .seg-opt:has(input:checked) { color: #fff; }
 [data-theme="dining"] .seg-opt:not(:has(input:checked)):hover {
   background: color-mix(in srgb, var(--color-text) 10%, transparent);
 }
-[data-theme="dining"] .btn-secondary { border-color: var(--color-divider); }
-[data-theme="dining"] .btn-secondary:hover {
-  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+
+[data-theme="dining"] .tag {
+  padding: 4px 11px;
+  border-radius: var(--radius-pill);
 }
 [data-theme="dining"] .tag-neutral {
-  background: color-mix(in srgb, var(--color-text) 12%, transparent);
-  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: color-mix(in srgb, var(--color-text) 75%, transparent);
 }
-[data-theme="dining"] .card { background: var(--color-surface); }
+
+[data-theme="dining"] .stepper {
+  border-radius: var(--radius-pill);
+  color: #fff;
+}
+[data-theme="dining"] .stepper button:focus-visible { outline-color: #fff; }
+
+[data-theme="dining"] .card {
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-xl);
+}
+[data-theme="dining"] .hr { height: 1px; background: var(--color-hairline); }
+
+/* — header —
+   Translucent and blurred so the photography scrolls under it instead of
+   hitting a hard bar. */
+[data-theme="dining"] .dining-nav {
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-hairline);
+}
 [data-theme="dining"] .nav,
-[data-theme="dining"] header { border-color: var(--color-divider); }
+[data-theme="dining"] header { border-color: var(--color-hairline); }
+
+/* — cart bar —
+   Detached from the bottom edge and rounded into a floating pill, so it reads
+   as a control laid over the menu rather than a bar welded to the phone. */
+[data-theme="dining"] .cartbar {
+  bottom: 14px;
+  margin: 0 14px 14px;
+  padding: 13px 20px;
+  color: #fff;
+  border-radius: var(--radius-pill);
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dining"] .dialog { border-radius: var(--radius-2xl); }
 
 /* — quantity stepper —
    Reads as one control, not three buttons. Filled with the accent so it is
