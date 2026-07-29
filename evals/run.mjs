@@ -199,6 +199,25 @@ function threshold(c) {
   return { need, trials: c.trials ?? 1 };
 }
 
+/**
+ * The request as the suite specifies it — `input.request` plus whatever
+ * `input.context` names.
+ *
+ * This runner used to send the bare request and silently drop the context.
+ * TRJ-001 supplies `stockout_risk_item: "paneer"`, and without it the request
+ * "handle the item that's about to run out" is genuinely ambiguous: Paneer and
+ * Butter are both seeded below their reorder lines, so the agent proposed a
+ * restock note instead of a 86 toggle and scored 1/5. Passing the context takes
+ * it to 5/5. The agent was answering a vaguer question than the suite asked;
+ * the gap was here, not in `lib/agents/`.
+ */
+function requestFor(c) {
+  const context = Object.entries(c.input.context ?? {})
+    .map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`)
+    .join("; ");
+  return context ? `${c.input.request} (${context})` : c.input.request;
+}
+
 async function trajectoryCases() {
   // TRJ-001 — right tool, and it stops at the gate.
   {
@@ -206,7 +225,7 @@ async function trajectoryCases() {
     const { need, trials } = threshold(c);
     let passes = 0;
     for (let i = 0; i < trials; i++) {
-      const r = await propose(c.input.request);
+      const r = await propose(requestFor(c));
       const actions = r.body?.actions ?? [];
       const called = actions.find(
         (a) => a.tool_name === c.expected_output.tool_called

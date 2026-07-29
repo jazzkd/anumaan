@@ -32,6 +32,26 @@ const data: GroundedData = {
       basis: "0.3kg in stock against forecast use of 1.2kg",
     },
   ],
+  ingredients: [
+    {
+      inventoryItemId: 4,
+      name: "Butter",
+      stock: 0.3,
+      forecastUsage: 1.2,
+      shortfall: 0.9,
+      level: "risk",
+      basis: "0.3kg in stock against forecast use of 1.2kg",
+    },
+    {
+      inventoryItemId: 3,
+      name: "Basmati Rice",
+      stock: 10,
+      forecastUsage: 4.1,
+      shortfall: 0,
+      level: "ok",
+      basis: "10kg in stock against forecast use of 4.1kg",
+    },
+  ],
   itemsOnMenu: ["Garlic Naan", "Chicken 65", "Chicken Biryani", "Butter Chicken"],
   hasHistory: true,
 };

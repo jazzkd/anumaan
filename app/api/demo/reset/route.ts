@@ -1,5 +1,7 @@
 import { requireRole } from "@/lib/auth";
 import { RESTAURANT_ID } from "@/lib/constants";
+import { businessDateOffset } from "@/lib/dates";
+import { synthesizeHistory } from "@/lib/demoHistory";
 import { ok, serverError } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -14,10 +16,18 @@ export const dynamic = "force-dynamic";
  * stockout story the agent tells no longer matches the one the seed set up,
  * and the most persuasive moment in the demo stops working.
  *
- * It resets the moving parts and leaves the 28 days of sales history alone:
- * that history is what the forecast reads, and regenerating it would change
- * the two figures the eval suite pins (Garlic Naan's Friday 40, yesterday's
- * ₹18,400).
+ * It also rolls the 28 days of sales history forward so the window still ends
+ * yesterday. An earlier version of this handler deliberately left that history
+ * alone, on the stated grounds that regenerating it would move the two figures
+ * the eval suite pins. That turned out to be false, and costly: both figures
+ * are date-relative by construction, and `seed.sql` proves it by asserting them
+ * after every run. Meanwhile the seed stored `current_date - 1` as an absolute
+ * date, so the demo silently decayed the morning after it was seeded — GND-001
+ * reporting ₹0 against the ₹18,400 it asserts — with no way to recover short of
+ * re-seeding by hand. Rolling it here is what makes the reset button honest.
+ *
+ * See `lib/demoHistory.ts`; `demoHistory.test.ts` holds both invariants across
+ * a year of start dates.
  */
 const SEEDED_INVENTORY: Record<number, number> = {
   1: 2.0, // Paneer  — deliberately tight, this is what the agent flags
@@ -145,9 +155,37 @@ export async function POST() {
     await db.from("briefings").delete().eq("restaurant_id", RESTAURANT_ID);
     done.push("stored briefing");
 
+    // Sales history, rolled forward so the window still ends yesterday. Prices
+    // come from the menu rather than a constant here: yesterday's ₹18,400 is
+    // quantities × the seeded prices, so a repriced item must move the figure
+    // rather than silently disagree with the menu the briefing cites.
+    const { data: menu, error: menuError } = await db
+      .from("menu_items")
+      .select("id, price")
+      .eq("restaurant_id", RESTAURANT_ID);
+    if (menuError) throw new Error(`menu prices: ${menuError.message}`);
+
+    const prices = new Map<number, number>(
+      (menu ?? []).map((m) => [m.id as number, Number(m.price)])
+    );
+    const history = synthesizeHistory(prices).map((row) => ({
+      ...row,
+      restaurant_id: RESTAURANT_ID,
+    }));
+
+    await db
+      .from("daily_summaries")
+      .delete()
+      .eq("restaurant_id", RESTAURANT_ID);
+    const { error: historyError } = await db
+      .from("daily_summaries")
+      .insert(history);
+    if (historyError) throw new Error(`sales history: ${historyError.message}`);
+    done.push(`sales history (28 days ending ${businessDateOffset(-1)})`);
+
     return ok({
       reset: done,
-      note: "Sales history was left untouched — it is what the forecast reads, and the eval suite pins two figures in it.",
+      note: "Sales history was rolled forward so the 28-day window still ends yesterday; the figures GND-001 and DET-001 pin are reproduced exactly.",
     });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : "Reset failed");
